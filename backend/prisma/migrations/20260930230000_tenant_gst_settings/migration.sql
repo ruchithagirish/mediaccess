@@ -1,0 +1,5 @@
+ALTER TABLE "Tenant" ADD COLUMN "billingAddress" TEXT,
+ADD COLUMN "discountApprovalBps" INTEGER NOT NULL DEFAULT 500,
+ADD COLUMN "gstin" TEXT,
+ADD COLUMN "legalName" TEXT,
+ADD COLUMN "stateCode" TEXT;
