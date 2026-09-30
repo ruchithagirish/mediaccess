@@ -8,6 +8,7 @@ export interface AccessPayload {
   sub: string;
   tid: string;
   roles: Role[];
+  sid: string;
 }
 
 export const signAccessToken = (p: AccessPayload) =>

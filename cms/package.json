@@ -1,0 +1,22 @@
+{
+  "name": "mediaccess-cms",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "sanity dev",
+    "build": "sanity build",
+    "deploy": "sanity deploy"
+  },
+  "dependencies": {
+    "@sanity/vision": "^5.31.2",
+    "react": "^19.2.2",
+    "react-dom": "^19.2.2",
+    "sanity": "^5.31.2",
+    "styled-components": "^6.5.3"
+  },
+  "overrides": {
+    "adm-zip": "^0.6.1",
+    "js-yaml": "^4.1.1",
+    "uuid": "^11.1.1"
+  }
+}

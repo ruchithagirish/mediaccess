@@ -213,6 +213,7 @@ model Tenant {
   users     User[]
   patients  Patient[]
   doctors   DoctorProfile[]
+  publicBookingVerifications PublicBookingVerification[]
   specialties Specialty[]
   schedules DoctorSchedule[]
   appointments Appointment[]
@@ -428,6 +429,7 @@ model DoctorProfile {
   surgicalCasesAsAnaesthetist OTCase[] @relation("OTAnaesthetist")
   prescriptionFavorites PrescriptionFavorite[]
   prescriptionTemplates PrescriptionTemplate[]
+  bookingVerifications PublicBookingVerification[]
   investigationOrders   InvestigationOrder[]
 
   @@index([tenantId, isBookable])
@@ -516,6 +518,29 @@ model RefreshToken {
 
   @@index([family])
   @@index([userId])
+}
+
+model PublicBookingVerification {
+  id          String   @id @default(cuid())
+  tenantId    String
+  name        String
+  phone       String
+  email       String
+  dob         DateTime @db.Date
+  doctorId    String
+  scheduledFor DateTime @db.Date
+  startTime   String
+  reason      String?
+  otpHash     String
+  expiresAt   DateTime
+  attempts    Int      @default(0)
+  consumedAt  DateTime?
+  createdAt   DateTime @default(now())
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  doctor      DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, phone, createdAt])
+  @@index([expiresAt])
 }
 
 model AuditLog {
@@ -1017,7 +1042,6 @@ model InventoryBatch {
   movements       InventoryMovement[]
   dispenseLines   DispenseLine[]
 
-  @@unique([inventoryItemId, batchNumber])
   @@index([tenantId, expiryDate, quantityOnHand])
   @@index([inventoryItemId, expiryDate])
 }
@@ -1049,6 +1073,8 @@ model Dispense {
   pharmacistId  String
   idempotencyKey String
   status         DispenseStatus
+  pharmacistNote String?
+  safetyWarningsReviewed Boolean @default(false)
   createdAt      DateTime      @default(now())
   tenant         Tenant        @relation(fields: [tenantId], references: [id])
   prescription   Prescription @relation(fields: [prescriptionId], references: [id])

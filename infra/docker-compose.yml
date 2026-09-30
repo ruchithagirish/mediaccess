@@ -1,0 +1,27 @@
+name: mediaccess
+
+services:
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mediaccess
+      POSTGRES_PASSWORD: mediaccess
+      POSTGRES_DB: mediaccess
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+volumes:
+  pgdata:
+    name: mediaccess_app_pgdata
+  redisdata:
+    name: mediaccess_app_redisdata

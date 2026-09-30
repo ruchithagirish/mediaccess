@@ -3,11 +3,12 @@ import bcrypt from "bcryptjs";
 import { AppointmentSource, AppointmentStatus, Prisma, Role, UserStatus } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
-import { authenticate, reverifyRole } from "../../middleware/auth";
+import { authenticate } from "../../middleware/auth";
+import { reverifyRole } from "../../middleware/rbac";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../lib/errors";
 import { wrap } from "../../lib/async";
-import { audit } from "../../lib/audit";
+import { audit } from "../../middleware/audit";
 import { notifyQueueChanged } from "../../lib/queue-events";
 
 const router = Router();

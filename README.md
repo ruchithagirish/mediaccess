@@ -15,18 +15,30 @@ Implements these workflows from the Master Specification:
 
 ```
 mediaccess/
-├── docker-compose.yml     PostgreSQL
 ├── backend/               Express + TypeScript + Prisma
-└── web/                   Next.js 14 (App Router)
+│   ├── src/modules/       Domain routes and services
+│   ├── src/middleware/    auth, rbac, tenant, audit, errorHandler
+│   ├── src/jobs/          Placeholder for future BullMQ workers
+│   └── prisma/            Schema, migrations, and seed
+├── web/                   Next.js 16 (App Router)
+│   ├── app/(public)/      Marketing, discovery, and education
+│   ├── app/(hms)/         Staff login and HMS console
+│   ├── app/(patient)/     Patient portal
+│   └── components/        Domain-grouped React components
+├── mobile/                Flutter patient-app placeholder
+├── ai-service/            FastAPI placeholder
+├── shared/                TypeScript contract placeholders
+├── cms/                   Sanity Studio
+└── infra/                 Docker Compose, Terraform, and CI placeholders
 ```
 
 ## Run it
 
-Requires Node 20+ and Docker.
+Requires Node 20.9+ and Docker.
 
 ```bash
 # 1. database
-docker compose up -d
+docker compose -f infra/docker-compose.yml up -d
 
 # 2. backend
 cd backend
@@ -41,7 +53,20 @@ cd web
 cp .env.local.example .env.local   # adjust NEXT_PUBLIC_API_URL if needed
 npm install
 npm run dev                     # http://localhost:3000
+
+# 4. CMS (new terminal; set the same Sanity project and dataset as the web app)
+cd cms
+cp .env.example .env
+npm install
+npm run dev                     # Sanity Studio
 ```
+
+## Public website CMS
+
+- Create a Sanity project and set `NEXT_PUBLIC_SANITY_PROJECT_ID` and `NEXT_PUBLIC_SANITY_DATASET` in `web/.env.local`; set `SANITY_STUDIO_PROJECT_ID` and `SANITY_STUDIO_DATASET` in `cms/.env`. The public frontend queries only published documents and uses 60-second ISR revalidation.
+- Start `cms/` with `npm run dev` and sign in with a Sanity editor account. The Studio manages homepage copy, specialties, doctor profiles, services, health articles, and patient courses.
+- A doctor profile must reference the active HMS `DoctorProfile` ID in **HMS doctor ID** and one or more published specialties to appear in discovery. Languages, gender, experience, and focus are editorial filters/details; live bookability and available slots are always checked against the appointment API.
+- Set `publishedAt` to publish content. Updates appear on the website within 60 seconds. Use Sanity's normal editor roles to grant marketing staff content access without access to the HMS database.
 
 ## Demo accounts (from the seed)
 
@@ -67,6 +92,7 @@ Change these before any real deployment.
 | Page | URL |
 |---|---|
 | Public site | `/` |
+| Public discovery and booking | `/specialties` · `/doctors` · `/book-appointment` |
 | Patient register / login / portal / booking | `/register` · `/login` · `/portal` · `/portal/appointments` |
 | Staff register / login | `/staff/register` · `/staff/login` |
 | Dashboards | `/hms/dashboard/{admin,reception,doctor,nurse,pharmacy,lab,accounts}` |
@@ -89,9 +115,10 @@ Change these before any real deployment.
 
 ## Appointments
 
-- Patients choose a specialty, doctor, date and available time from **Patient portal → Book an appointment**.
+- Visitors choose a specialty, doctor, date and live available time from the public site. Booking verifies the patient's mobile by OTP, creates a portal account and central appointment record in one transaction, and starts a patient session. Existing patients can continue using **Patient portal → Book an appointment**.
 - `GET /api/v1/specialties`, `GET /api/v1/doctors?specialty={slug}`, and
   `GET /api/v1/doctors/{id}/slots?date=YYYY-MM-DD` provide the public booking catalog.
+- `POST /api/v1/public-bookings/otp` starts a ten-minute, rate-limited verification; `POST /api/v1/public-bookings/confirm` rechecks availability and atomically creates the patient and appointment. Development mode returns the OTP to the web UI; production requires an SMS or WhatsApp phone-verification channel. Expired verification data is pruned every five minutes.
 - `POST /api/v1/appointments` books for the signed-in patient. `GET /api/v1/appointments` returns the patient's
   upcoming appointments; staff can request a specific date, and doctors only see their own appointments.
 - `PATCH /api/v1/appointments/{id}` reschedules or changes an allowed status. `DELETE /api/v1/appointments/{id}`
@@ -130,9 +157,15 @@ WHATSAPP_PHONE_NUMBER_ID=
 WHATSAPP_API_VERSION=v21.0
 WHATSAPP_RECEIPT_TEMPLATE=payment_receipt
 WHATSAPP_RECEIPT_LANGUAGE=en
+WHATSAPP_OTP_TEMPLATE=
+WHATSAPP_APPOINTMENT_TEMPLATE=
+WHATSAPP_APPOINTMENT_LANGUAGE=en
+MSG91_AUTH_KEY=
+MSG91_OTP_TEMPLATE_ID=
+MSG91_APPOINTMENT_TEMPLATE_ID=
 ```
 
-Razorpay, SMTP, and WhatsApp delivery remain unavailable until the hospital supplies valid provider credentials and configures an approved WhatsApp receipt template.
+Appointment confirmation attempts use each configured email, SMS, and WhatsApp channel. Configure MSG91 approved OTP/flow templates, and WhatsApp approved OTP/appointment templates, along with provider credentials. Delivery is best-effort after the appointment is committed. Razorpay, SMTP, and WhatsApp delivery remain unavailable until valid provider credentials/templates are configured.
 
 ## Prescriptions and investigations
 
@@ -170,7 +203,7 @@ The AWS SDK uses its standard credential provider chain (for example, an IAM tas
 - Reception uses **Register patient** to create an active patient account and generate an `MA-` MRN. Email, mobile, and a provided ABHA ID are duplicate-checked per tenant; patient consent and a patient-set portal password are required.
 - ABHA ID is captured and stored but is not verified against an ABHA/ABDM service.
 - **Add walk-in** searches by name, phone, email, MRN, or ABHA ID, then checks the patient in to the selected doctor. Walk-ins receive the next doctor/day token and are stored as `WALK_IN`; they do not reserve a scheduled appointment slot.
-- The live OPD queue contains checked-in and in-consultation visits, sorted by token. Reception/Admin see the tenant queue; a Doctor sees only their assigned active queue. The WebSocket endpoint is `ws://localhost:4000/api/v1/queue/live` and requires the authenticated same-origin cookie. HTTP queue snapshots remain available at `GET /api/v1/queue`.
+- The live OPD queue contains checked-in and in-consultation visits, sorted by token. Reception/Admin see the tenant queue; a Doctor sees only their assigned active queue. The WebSocket endpoint is `ws://localhost:4000/api/v1/queue/live` and requires the authenticated same-origin cookie. Redis Pub/Sub distributes tenant queue-change events between API instances; HTTP queue snapshots remain available at `GET /api/v1/queue`.
 - Reception patient endpoints: `GET /api/v1/patients?search={name|phone|email|MRN|ABHA}` and `POST /api/v1/patients`. Walk-ins use `POST /api/v1/walk-ins`.
 
 ## IPD and operation theatre
@@ -184,11 +217,10 @@ The AWS SDK uses its standard credential provider chain (for example, an IAM tas
 
 ## Notes and next steps
 
-- PostgreSQL uses the explicit Docker volume `mediaccess_app_pgdata`; any older `mediaccess_pgdata` volume is left untouched.
+- PostgreSQL and Redis use the explicit Docker volumes `mediaccess_app_pgdata` and `mediaccess_app_redisdata`; any older `mediaccess_pgdata` volume is left untouched. Set `REDIS_URL` for the backend when Redis is not local; the API requires Redis before it starts serving.
 - Cookies work between `localhost:3000` and `localhost:4000` because they share a host. In production put web and API under the
   same parent domain (e.g. `app.example.in` and `api.example.in`) or proxy `/api` through Next.js.
-- Refresh tokens are stored (hashed) in PostgreSQL to keep local setup to one container. The spec calls for Redis; swap
-  `RefreshToken` reads/writes in `auth.routes.ts` for Redis when you add it.
+- Refresh tokens are stored (hashed) in PostgreSQL. Redis is used for live queue event fan-out across API instances.
 - Appointment tables on Reception and Doctor dashboards are live. Other dashboard KPIs and side panels remain static demo data in `web/lib/dashboards.ts`.
-- Not yet included: patient OTP, admin MFA, forgot-password flow, inactivity auto-logout, audit-log viewer,
-  refunds, insurer settlement/claims, lab analyzer integrations, CMS integration, Docker/CI files.
+- Not yet included: admin MFA, forgot-password flow, inactivity auto-logout, audit-log viewer,
+  refunds, insurer settlement/claims, lab analyzer integrations, Docker/CI files.

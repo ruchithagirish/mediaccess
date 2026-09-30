@@ -9,9 +9,9 @@ import { AppointmentStatus, Role, UserStatus } from "@prisma/client";
 import { config } from "./config";
 import { prisma } from "./lib/prisma";
 import { verifyAccessToken } from "./lib/tokens";
-import { queueEvents } from "./lib/queue-events";
+import { connectQueueEventBus, queueEvents } from "./lib/queue-events";
 import { resolveTenant } from "./middleware/tenant";
-import { errorHandler, notFound } from "./middleware/error";
+import { errorHandler, notFound } from "./middleware/errorHandler";
 import authRoutes from "./modules/auth/auth.routes";
 import adminRoutes from "./modules/admin/admin.routes";
 import appointmentRoutes from "./modules/appointments/appointments.routes";
@@ -28,7 +28,13 @@ const app = express();
 if (config.isProd) app.set("trust proxy", 1);
 
 app.use(helmet());
-app.use(cors({ origin: config.webOrigin, credentials: true }));
+app.use(cors({
+  origin: (origin, callback) => {
+    const localDevelopmentOrigin = !config.isProd && !!origin && /^http:\/\/localhost:\d+$/.test(origin);
+    callback(null, !origin || origin === config.webOrigin || localDevelopmentOrigin);
+  },
+  credentials: true,
+}));
 app.use(express.json({
   limit: "100kb",
   verify: (req, _res, buffer) => { (req as typeof req & { rawBody?: Buffer }).rawBody = Buffer.from(buffer); },
@@ -59,6 +65,14 @@ app.use("/api/v1", v1);
 
 app.use(notFound);
 app.use(errorHandler);
+
+const prunePublicBookingVerifications = () => {
+  void prisma.publicBookingVerification.deleteMany({ where: { expiresAt: { lte: new Date() } } })
+    .catch((error: unknown) => console.error("public booking verification cleanup failed", error));
+};
+prunePublicBookingVerifications();
+const verificationCleanupTimer = setInterval(prunePublicBookingVerifications, 5 * 60_000);
+verificationCleanupTimer.unref();
 
 const server = createServer(app);
 const queueSockets = new WebSocketServer({ noServer: true });
@@ -170,4 +184,9 @@ queueEvents.on("queue.changed", (tenantId: string) => {
   }).catch((error: unknown) => console.error("queue websocket update failed", error));
 });
 
-server.listen(config.port, () => console.log(`MediAccess API listening on :${config.port}`));
+void connectQueueEventBus()
+  .then(() => server.listen(config.port, () => console.log(`MediAccess API listening on :${config.port}`)))
+  .catch((error: unknown) => {
+    console.error("Could not connect to Redis queue event bus", error);
+    process.exit(1);
+  });

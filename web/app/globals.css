@@ -73,8 +73,17 @@ a[href="/login"],a[href="/login"]:hover,a[href="/login"]:visited,a[href="/login"
 .cta-strip{margin-top:28px;padding:22px 24px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .cta-strip h3{margin:0;font-size:20px}
 .doctor-card{text-align:left}
+.doctor-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0 22px}
+.doctor-filters .l{display:grid;align-content:end;gap:5px;margin:0}
 .doctor-specialty{color:var(--brand-d);font-weight:700;margin-bottom:10px!important}
 .doctor-meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--muted)}
+.booking-consent{display:flex;align-items:flex-start;gap:9px;margin:16px 0;font-size:13px;color:var(--text)}
+.booking-consent input{margin-top:4px;accent-color:var(--brand)}
+.article-content{max-width:760px;margin:30px auto 0;padding-bottom:36px}
+.article-content h1{font-size:clamp(30px,4vw,44px);line-height:1.15;margin:8px 0 14px}
+.article-summary{font-size:18px;color:var(--muted);padding-bottom:18px;border-bottom:1px solid var(--line)}
+.article-content>div{font-size:16px;line-height:1.8}
+.article-content>div p{margin:18px 0}
 .av.large{width:56px;height:56px;font-size:20px}
 .resource-card h3{margin-bottom:8px}
 .contact-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:18px;margin-top:14px}
@@ -152,6 +161,139 @@ td{padding:10px;border-bottom:1px solid var(--line);white-space:nowrap} tr:last-
 .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px} .li:last-child{border:0} .li small{color:var(--muted);display:block}
 .bars{display:flex;align-items:flex-end;gap:10px;height:130px;margin-top:8px} .bars div{flex:1;background:var(--brand);border-radius:6px 6px 0 0;position:relative;min-height:4px} .bars div span{position:absolute;bottom:-20px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted)}
+.admin-overview{display:grid;gap:16px}
+.admin-overview-heading,.admin-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.admin-overview-heading{margin:0 0 2px}
+.admin-overview-heading p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.admin-eyebrow,.admin-section-label{display:block;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.08em}
+.admin-refresh{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px}
+.admin-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.admin-metric{min-width:0;padding:16px 18px;border-right:1px solid var(--line)}
+.admin-metric:last-child{border-right:0}
+.admin-metric>span{display:block;color:var(--muted);font-size:12px}
+.admin-metric strong{display:block;margin:4px 0;font-size:27px;line-height:1.15;font-variant-numeric:tabular-nums}
+.admin-metric small{display:block;color:var(--muted);font-size:11px}
+.admin-metric.needs-attention strong{color:var(--warn)}
+.admin-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.admin-actions .admin-section-label{margin-right:8px}
+.admin-actions a{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--line);border-radius:7px;color:var(--text);font-size:12px;font-weight:650}
+.admin-actions a:hover{background:var(--surface);text-decoration:none}
+.admin-actions a span{color:var(--brand)}
+.admin-analytics{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(260px,.8fr);gap:14px}
+.admin-panel{min-width:0;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.admin-panel h2{margin:3px 0 0;font-size:16px}
+.admin-period{color:var(--muted);font-size:11px}
+.admin-line-chart{display:block;width:100%;height:138px;margin-top:12px;overflow:visible}
+.admin-line-chart line{stroke:var(--line);stroke-width:1;stroke-dasharray:3 5}
+.admin-line-chart polyline{fill:none;stroke:var(--brand);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.admin-line-chart circle{fill:var(--surface);stroke:var(--brand);stroke-width:2.5}
+.admin-chart-labels{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;text-align:center;color:var(--muted);font-size:10px}
+.admin-chart-labels span{display:grid;gap:2px}
+.admin-chart-labels b{color:var(--text);font-size:11px}
+.admin-volume-chart{height:174px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:12px;border-bottom:1px solid var(--line)}
+.admin-volume-column{display:grid;grid-template-rows:22px 1fr 24px;justify-items:center;align-items:end;gap:5px;color:var(--muted);font-size:11px}
+.admin-volume-column strong{color:var(--text);font-size:12px}
+.admin-volume-track{display:flex;align-items:flex-end;width:min(48px,70%);height:100%;background:var(--surface2);border-radius:4px 4px 0 0;overflow:hidden}
+.admin-volume-track i{display:block;width:100%;background:var(--brand);border-radius:4px 4px 0 0;min-height:0}
+.admin-specialty-list{display:grid;gap:12px;margin-top:14px}
+.admin-specialty-row>div{display:flex;justify-content:space-between;gap:10px;margin-bottom:5px;font-size:12px}
+.admin-specialty-row>div span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.admin-specialty-row>div strong{font-variant-numeric:tabular-nums}
+.admin-specialty-row>i{display:block;height:5px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.admin-specialty-row>i b{display:block;height:100%;background:var(--brand);border-radius:4px}
+.admin-health-live{padding:3px 7px;border-radius:4px;background:var(--okbg);color:var(--ok);font-size:9px;font-weight:800}
+.admin-health-row{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);font-size:12px}
+.admin-health-row span{display:flex;align-items:center;gap:8px}
+.admin-health-row span i{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.admin-health-row strong{font-size:11px;color:var(--ok)}
+.admin-health-note,.admin-announcement-note{margin-top:12px;color:var(--muted);font-size:10px;line-height:1.5}
+.admin-lower-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(260px,.8fr);gap:14px}
+.admin-activity-list{margin-top:8px}
+.admin-activity-list article{display:grid;grid-template-columns:12px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.admin-activity-list article:last-child{border-bottom:0}
+.admin-activity-mark{width:7px;height:7px;border-radius:50%;background:var(--brand)}
+.admin-activity-list article>div{display:grid;gap:2px;min-width:0}
+.admin-activity-list strong{font-size:11px;text-transform:capitalize}
+.admin-activity-list article>div span{overflow:hidden;color:var(--muted);font-size:11px;text-overflow:ellipsis;white-space:nowrap}
+.admin-activity-list time{color:var(--muted);font-size:10px;white-space:nowrap}
+.admin-notification-item{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);color:var(--text)}
+.admin-notification-item:hover{text-decoration:none}
+.admin-notification-icon{display:grid;width:22px;height:22px;place-items:center;border-radius:50%;background:var(--warnbg);color:var(--warn);font-weight:800}
+.admin-notification-item>span:nth-child(2){display:grid;gap:2px}
+.admin-notification-item strong{font-size:12px}
+.admin-notification-item small{color:var(--muted);font-size:11px}
+.admin-notification-item>b{color:var(--muted);font-size:20px}
+.admin-empty{margin:16px 0 0;color:var(--muted);font-size:12px}
+.admin-approval-anchor{scroll-margin-top:16px}
+.user-management{display:grid;gap:16px}
+.user-management-header,.user-panel-heading,.user-header-actions,.user-pagination,.user-pagination>div{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.user-management-header p{margin:3px 0 0;color:var(--muted);font-size:13px}
+.user-header-actions{justify-content:flex-end}
+.user-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.user-metrics>div{padding:13px 16px;border-right:1px solid var(--line)}
+.user-metrics>div:last-child{border:0}
+.user-metrics span{display:block;color:var(--muted);font-size:11px}
+.user-metrics strong{display:block;margin-top:3px;font-size:22px;font-variant-numeric:tabular-nums}
+.user-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.user-tabs button{padding:9px 12px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);font-size:13px;font-weight:650}
+.user-tabs button.active{border-bottom-color:var(--brand);color:var(--text)}
+.user-panel{min-width:0;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.user-panel-heading{margin-bottom:14px}
+.user-panel-heading h2{margin:3px 0 0;font-size:16px}
+.user-result-count{color:var(--muted);font-size:11px}
+.user-filters{display:grid;grid-template-columns:minmax(220px,1fr) minmax(150px,220px) minmax(160px,220px);gap:10px;margin-bottom:12px}
+.user-filters label,.user-audit-filter{display:grid;gap:4px;color:var(--muted);font-size:11px}
+.user-filters .inp,.user-audit-filter .inp{padding:8px 10px;font-size:12px}
+.user-table-wrap{border:1px solid var(--line);border-radius:8px}
+.user-table{min-width:1120px;font-size:12px}
+.user-table th{padding:8px}
+.user-table td{padding:9px 8px;vertical-align:middle}
+.user-sort{display:flex;align-items:center;gap:5px;padding:0;border:0;background:transparent;color:inherit;font:inherit;font-weight:700;text-align:left;text-transform:inherit;white-space:nowrap}
+.user-sort span{color:var(--brand)}
+.user-cell{display:grid;gap:2px;min-width:140px}
+.user-cell strong{font-size:12px}
+.user-cell small{color:var(--muted);font-size:10px}
+.user-role-tags{display:flex;gap:4px;flex-wrap:wrap;min-width:100px}
+.user-role-tag{padding:2px 6px;border-radius:4px;background:var(--brand-soft);color:var(--brand-d);font-size:10px;font-weight:700}
+.user-status{display:inline-block;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:700}
+.user-status.status-active{background:var(--okbg);color:var(--ok)}
+.user-status.status-pending{background:var(--warnbg);color:var(--warn)}
+.user-status.status-disabled,.user-status.status-rejected{background:var(--badbg);color:var(--bad)}
+.user-row-actions{display:flex;gap:8px;align-items:center}
+.user-row-actions .text-action{padding:0;white-space:nowrap;font-size:11px}
+.danger-text{color:var(--bad)!important}
+.user-empty-row{padding:22px;text-align:center;color:var(--muted)}
+.user-pagination{margin-top:10px;color:var(--muted);font-size:11px}
+.user-pagination>div{justify-content:flex-end}
+.user-pagination .btn{font-size:11px}
+.user-capability-note{margin:12px 0 0;padding:9px 10px;border-left:3px solid var(--warn);background:var(--warnbg);color:var(--text);font-size:11px;line-height:1.55}
+.user-role-catalog{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.user-role-catalog article{padding:11px 12px;border:1px solid var(--line);border-radius:7px}
+.user-role-catalog article>div{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.user-role-catalog strong{font-size:12px}
+.user-role-catalog article>div span{color:var(--muted);font-size:9px;font-weight:700}
+.user-role-catalog p{margin:5px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
+.user-security-note{margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--surface2)}
+.user-security-note strong{font-size:12px}
+.user-security-note p{margin:4px 0 0;color:var(--muted);font-size:11px;line-height:1.6}
+.user-security-warning{border-color:color-mix(in srgb,var(--warn) 35%,var(--line));background:var(--warnbg)}
+.user-audit-filter{min-width:200px}
+.user-audit-table{min-width:900px;font-size:11px}
+.user-audit-table td{max-width:260px;overflow:hidden;text-overflow:ellipsis}
+.user-role-modal{width:min(560px,100%)}
+.user-role-options{display:grid;gap:2px;margin:12px 0;padding:0;border:0}
+.user-role-options legend{margin-bottom:8px;color:var(--muted);font-size:12px;font-weight:700}
+.user-role-options label{display:flex;align-items:center;gap:10px;padding:9px;border-bottom:1px solid var(--line);cursor:pointer}
+.user-role-options input{width:16px;height:16px;accent-color:var(--brand)}
+.user-role-options label span{display:grid;gap:1px}
+.user-role-options strong{font-size:12px}
+.user-role-options small{color:var(--muted);font-size:10px}
+@media(max-width:900px){.user-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.user-metrics>div:nth-child(3){border:0}.user-metrics>div:nth-child(-n+3){border-bottom:1px solid var(--line)}}
+@media(max-width:680px){.user-filters{grid-template-columns:1fr 1fr}.user-search{grid-column:1/-1}.user-role-catalog{grid-template-columns:1fr}.user-audit-filter{min-width:0}}
+@media(max-width:520px){.user-management-header{align-items:flex-start;flex-direction:column}.user-header-actions{width:100%;justify-content:flex-start}.user-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.user-metrics>div:nth-child(3){border-right:1px solid var(--line)}.user-metrics>div:nth-child(2n){border-right:0}.user-metrics>div:nth-child(-n+4){border-bottom:1px solid var(--line)}.user-filters{grid-template-columns:1fr}.user-search{grid-column:auto}.user-tabs{overflow-x:auto}.user-tabs button{white-space:nowrap}.user-panel{padding:12px}}
+@media(max-width:900px){.admin-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-metric:nth-child(2){border-right:0}.admin-metric:nth-child(-n+2){border-bottom:1px solid var(--line)}}
+@media(max-width:680px){.admin-analytics,.admin-lower-grid{grid-template-columns:1fr}.admin-volume-chart{height:150px}}
+@media(max-width:520px){.admin-overview-heading{align-items:flex-start;flex-direction:column}.admin-refresh{width:100%;justify-content:space-between}.admin-metric{padding:12px}.admin-metric strong{font-size:23px}.admin-actions{align-items:flex-start}.admin-actions .admin-section-label{width:100%}.admin-actions a{flex:1;justify-content:center}.admin-chart-labels{font-size:9px}}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;z-index:50;max-width:90vw}
 .hide-d{display:none}
 .menu{display:none}
@@ -215,6 +357,12 @@ a.btn:hover{text-decoration:none}
 .queue-connection.connected i{background:var(--ok)}
 .reception-actions{margin-top:16px}
 .reception-message{margin-top:10px}
+.reception-main{min-width:0}.reception-home{display:grid;gap:14px;max-width:1600px;margin:0 auto;padding:0 0 36px}.reception-home-header,.reception-home-panel-head{display:flex;align-items:center;justify-content:space-between;gap:14px}.reception-home-header{padding:2px 0 12px;border-bottom:1px solid var(--line)}.reception-home-header h2{margin:3px 0;font-size:22px}.reception-home-header p{margin:0;color:var(--muted);font-size:12px}.reception-home-kicker{font-size:9px;font-weight:800;color:var(--brand-d)}
+.reception-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.reception-metrics article{min-width:0;display:grid;gap:3px;padding:11px 13px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}.reception-metrics span,.reception-metrics small{font-size:10px;color:var(--muted)}.reception-metrics strong{overflow-wrap:anywhere;font-size:20px;font-variant-numeric:tabular-nums}.reception-home-columns{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.85fr);gap:12px;align-items:start}.reception-home-panel{min-width:0;padding:13px 14px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}.reception-home-panel-head{margin-bottom:8px}.reception-home-panel-head h3{margin:3px 0 0;font-size:14px}.reception-module-links{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.reception-module-links a{min-width:0;display:grid;align-content:start;gap:5px;padding:11px 12px;border:1px solid var(--line);border-top:2px solid var(--brand);border-radius:4px;background:var(--surface);color:var(--text)}.reception-module-links a:hover{background:var(--surface2)}.reception-module-links span{font-size:8px;font-weight:800;color:var(--brand-d)}.reception-module-links strong{font-size:11px}.reception-module-links small{font-size:9px;line-height:1.4;color:var(--muted)}
+.reception-booking-form{display:grid;grid-template-columns:minmax(180px,1.6fr) minmax(150px,1.2fr) repeat(2,minmax(120px,1fr));align-items:end;gap:9px}.reception-booking-form>label{position:relative;display:grid;gap:4px;min-width:0}.reception-booking-form>label>span{font-size:10px;font-weight:700;color:var(--muted)}.reception-booking-form .inp{min-width:0;padding:8px;font-size:11px}.reception-booking-reason{grid-column:1/4}.reception-booking-picks{position:absolute;z-index:10;top:100%;left:0;right:0;display:grid;max-height:190px;overflow:auto;padding:4px;border:1px solid var(--line);background:var(--surface);box-shadow:0 8px 18px rgba(0,0,0,.12)}.reception-booking-picks button{display:grid;gap:2px;padding:7px;text-align:left;border:0;background:transparent;color:var(--text)}.reception-booking-picks button:hover{background:var(--surface2)}.reception-booking-picks strong{font-size:10px}.reception-booking-picks small{font-size:9px;color:var(--muted)}.reception-appointment-actions{white-space:nowrap}
+@media(max-width:1050px){.reception-home-columns{grid-template-columns:1fr}.reception-module-links{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.reception-booking-form{grid-template-columns:repeat(2,minmax(0,1fr))}.reception-booking-reason{grid-column:1/-1}}
+@media(max-width:560px){.reception-home{padding-bottom:24px}.reception-home-header{align-items:flex-start;flex-direction:column}.reception-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.reception-module-links{grid-template-columns:1fr}.reception-home-panel{padding:10px}.reception-home-panel-head{align-items:flex-start}.reception-booking-form{grid-template-columns:1fr}.reception-booking-reason{grid-column:auto}}
 .reception-modal{width:min(760px,100%)}
 .reception-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
 .reception-fields label span{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
@@ -227,6 +375,8 @@ a.btn:hover{text-decoration:none}
 .patient-results button:hover,.patient-results button:focus-visible{background:var(--surface2);outline:2px solid var(--brand-soft)}
 .patient-results span{font-size:12px;color:var(--muted)}
 @media(max-width:600px){.portal-actions{align-items:flex-start;flex-direction:column}.booking-content{margin-top:18px}.booking-content h1{font-size:24px}}
+@media(max-width:700px){.doctor-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.doctor-filters{grid-template-columns:1fr}}
 @media(max-width:560px){.modal-scrim{padding:8px}.treatment-modal{max-height:94vh;padding:16px}.treatment-line{grid-template-columns:1fr 70px}.treatment-line label:first-child{grid-column:1 / -1}.treatment-line label:nth-child(3){grid-column:1 / -1}}
 @media(max-width:520px){.reception-fields{grid-template-columns:1fr}.patient-results button{flex-direction:column;gap:2px}}
 
@@ -262,6 +412,7 @@ a.btn:hover{text-decoration:none}
 .patient-facts>div{min-width:0;display:grid;gap:3px}
 .patient-facts strong{font-size:13px;overflow-wrap:anywhere}
 .patient-profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.patient-record-history-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
 .patient-section{min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:14px 16px}
 .patient-section-title{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:10px}
 .patient-section-title h3{font-size:15px;margin:2px 0 0}
@@ -270,6 +421,12 @@ a.btn:hover{text-decoration:none}
 .patient-list-item strong,.patient-visit strong{font-size:13px}
 .patient-list-item span,.patient-visit span,.patient-visit time{font-size:12px;color:var(--muted)}
 .patient-list-item small{font-weight:400;color:var(--muted)}
+.patient-history-row,.patient-history-card{display:grid;gap:6px;padding:9px 0;border-top:1px solid var(--line)}.patient-history-row>div,.patient-history-card>header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.patient-history-row strong,.patient-history-card strong{font-size:11px}.patient-history-row span,.patient-history-row small,.patient-history-card small,.patient-history-muted{font-size:10px;line-height:1.45;color:var(--muted)}.patient-history-row.abnormal{border-left:3px solid var(--bad);padding-left:8px}
+.patient-record-flag,.patient-record-state{flex:none;padding:3px 6px;border-radius:3px;background:var(--surface2);color:var(--muted);font-size:8px;font-weight:800;text-transform:uppercase}.patient-record-flag{background:var(--badbg);color:var(--bad)}.patient-history-card>header>div{display:grid;gap:2px;min-width:0}.patient-history-card>header>b:last-child{font-size:11px;font-variant-numeric:tabular-nums}.patient-history-card>p{margin:0;font-size:10px;line-height:1.5;color:var(--muted)}
+.patient-detail-disclosure{border-top:1px solid var(--line)}.patient-detail-disclosure summary{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;cursor:pointer;list-style:none}.patient-detail-disclosure summary::-webkit-details-marker{display:none}.patient-detail-disclosure summary>span{display:grid;gap:2px;min-width:0}.patient-detail-disclosure summary strong{font-size:11px}.patient-detail-disclosure summary small,.patient-detail-disclosure summary>b{font-size:9px;color:var(--muted)}.patient-detail-disclosure dl{display:grid;grid-template-columns:90px minmax(0,1fr);gap:5px 8px;margin:0 0 9px;padding:8px;background:var(--surface2)}.patient-detail-disclosure dt{font-size:9px;font-weight:800;color:var(--brand-d)}.patient-detail-disclosure dd{margin:0;font-size:10px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
+.patient-medication-row{display:grid;gap:2px;padding:6px 0;border-top:1px solid var(--line)}.patient-medication-row>strong{font-size:10px}.patient-medication-row>span,.patient-medication-row>small{font-size:9px;line-height:1.4;color:var(--muted)}.patient-medication-row .patient-dispense-detail{padding-left:8px;border-left:2px solid var(--ok)}
+.patient-report-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line)}.patient-report-row>div{min-width:0;display:grid;gap:2px}.patient-report-row>div strong{overflow-wrap:anywhere}.patient-report-row.critical{border-left:3px solid var(--bad);padding-left:8px}.patient-report-row .btn{white-space:nowrap}.patient-availability-note{display:grid;gap:3px;margin-top:8px;padding:9px;border-left:3px solid var(--warn);background:var(--warnbg)}.patient-availability-note strong{font-size:10px}.patient-availability-note span{font-size:9px;line-height:1.45}
+.patient-invoice-lines{display:grid;gap:4px;padding:7px 0;border-top:1px solid var(--line)}.patient-invoice-lines>div,.patient-invoice-balance,.patient-payment-row{display:flex;justify-content:space-between;gap:8px;font-size:9px}.patient-invoice-lines span,.patient-invoice-balance span,.patient-payment-row span,.patient-payment-row small{color:var(--muted)}.patient-invoice-balance{padding:6px 0;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}.patient-invoice-balance strong{font-size:10px}.patient-payment-row{flex-wrap:wrap;padding:6px 0;border-top:1px solid var(--line)}.patient-payment-row strong{font-size:10px}.patient-payment-row small{flex-basis:100%}
 .patient-timeline{padding:16px 18px}
 .patient-filters{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px}
 .patient-filters button{border:1px solid transparent;background:transparent;color:var(--muted);font-size:11px;padding:5px 8px;border-radius:3px}
@@ -297,7 +454,12 @@ a.btn:hover{text-decoration:none}
 .patient-form-top{display:grid;grid-template-columns:minmax(180px,.7fr) minmax(0,1.3fr);gap:12px}
 .soap-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .diagnosis-row{grid-template-columns:1fr 1fr}
-.voice-disabled{display:inline-flex;align-items:center;gap:7px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;background:var(--surface2);color:var(--muted);font-size:11px;font-weight:700;cursor:not-allowed}
+.voice-controls{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:0 0 14px;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:var(--surface2)}
+.voice-consent{display:flex;align-items:flex-start;gap:7px;flex:1;min-width:220px;font-size:11px;color:var(--muted)}
+.voice-consent input{margin-top:3px;accent-color:var(--brand)}
+.voice-button{padding:7px 10px;border:1px solid var(--brand);border-radius:4px;background:var(--surface);color:var(--brand-d);font-size:12px;font-weight:700}
+.voice-button.active{background:var(--badbg);border-color:var(--bad);color:var(--bad)}
+.voice-controls>span{font-size:11px;color:var(--muted)}
 .voice-disabled small{font-size:9px;font-weight:500}
 .profile-add-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .profile-add-grid fieldset{display:grid;align-content:start;gap:8px;min-width:0;border:1px solid var(--line);border-radius:4px;padding:8px}
@@ -306,8 +468,12 @@ a.btn:hover{text-decoration:none}
 .profile-add-grid .inp,.profile-dates .inp{padding:7px 8px;border-radius:4px;font-size:12px}
 .profile-dates{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 @media(max-width:920px){.patient-layout{grid-template-columns:220px minmax(0,1fr);gap:16px}.patient-results-panel{padding-right:8px}.vital-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.patient-profile-grid{gap:8px}}
-@media(max-width:680px){.patient-workspace{padding:16px 12px 32px}.patient-topbar{align-items:stretch;flex-direction:column;gap:12px}.patient-search{width:100%}.patient-layout{grid-template-columns:1fr}.patient-results-panel{position:static;max-height:220px;border-right:0;border-bottom:1px solid var(--line);padding:0 0 8px}.patient-profile-grid{grid-template-columns:1fr}.patient-facts{grid-template-columns:1fr 1fr}.patient-abha{display:none}.patient-filters{justify-content:flex-start}.patient-timeline .patient-section-title{align-items:flex-start;flex-direction:column}.timeline-item{grid-template-columns:76px 12px minmax(0,1fr);gap:7px}.timeline-item:not(:last-child):after{left:84px}.timeline-line{display:grid;gap:2px}.patient-form-top,.soap-grid,.diagnosis-row,.profile-add-grid{grid-template-columns:1fr}}
-@media(max-width:420px){.patient-identity h2{font-size:20px}.patient-facts{grid-template-columns:1fr}.vital-grid{grid-template-columns:1fr 1fr}.patient-form-end{align-items:flex-start;flex-direction:column}.patient-form-end .btn{align-self:flex-end}}
+@media(max-width:680px){.patient-workspace{padding:16px 12px 32px}.patient-topbar{align-items:stretch;flex-direction:column;gap:12px}.patient-search{width:100%}.patient-layout{grid-template-columns:1fr}.patient-results-panel{position:static;max-height:220px;border-right:0;border-bottom:1px solid var(--line);padding:0 0 8px}.patient-profile-grid,.patient-record-history-grid{grid-template-columns:1fr}.patient-facts{grid-template-columns:1fr 1fr}.patient-abha{display:none}.patient-filters{justify-content:flex-start}.patient-timeline .patient-section-title{align-items:flex-start;flex-direction:column}.timeline-item{grid-template-columns:76px 12px minmax(0,1fr);gap:7px}.timeline-item:not(:last-child):after{left:84px}.timeline-line{display:grid;gap:2px}.patient-form-top,.soap-grid,.diagnosis-row,.profile-add-grid{grid-template-columns:1fr}}
+@media(max-width:420px){.patient-identity h2{font-size:20px}.patient-facts{grid-template-columns:1fr}.vital-grid{grid-template-columns:1fr 1fr}.patient-form-end{align-items:flex-start;flex-direction:column}.patient-form-end .btn{align-self:flex-end}.patient-report-row{grid-template-columns:minmax(0,1fr) auto}.patient-report-row .patient-record-flag{grid-column:1}.patient-report-row .btn{grid-column:2;grid-row:1/3}.patient-invoice-balance{flex-direction:column}.patient-detail-disclosure dl{grid-template-columns:72px minmax(0,1fr)}}
+.profile-main{min-width:0}.profile-dashboard{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding-bottom:32px}.profile-panel{min-width:0;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:4px}.profile-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}.profile-panel-heading>div{display:grid;gap:2px}.profile-panel-heading>div>span{font-size:9px;font-weight:800;color:var(--brand-d)}.profile-panel-heading h2{margin:0;font-size:15px}.profile-panel-heading>span{font-size:9px;color:var(--muted)}.profile-avatar{width:38px;aspect-ratio:1;display:grid;place-items:center;border-radius:4px;background:var(--brand-soft);color:var(--brand-d);font-size:12px;font-weight:800}.profile-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.profile-form label{display:grid;gap:4px;min-width:0}.profile-form label>span{font-size:10px;font-weight:650;color:var(--muted)}.profile-form .inp{min-width:0;padding:8px;font-size:11px}.profile-form button{justify-self:start}.profile-form>small{grid-column:1/-1;font-size:9px;line-height:1.45;color:var(--muted)}.profile-unavailable{display:grid;gap:3px;margin:10px 0 0;padding:8px 9px;border-left:3px solid var(--warn);background:var(--warnbg);font-size:9px;line-height:1.45}.profile-role{display:flex;align-items:center;gap:9px;padding:7px 0;border-top:1px solid var(--line)}.profile-role strong{padding:3px 6px;border-radius:3px;background:var(--brand-soft);color:var(--brand-d);font-size:9px}.profile-role span,.profile-muted{font-size:10px;color:var(--muted)}.profile-permissions{display:grid;gap:7px;margin:4px 0 0;padding-left:17px}.profile-permissions li{font-size:10px;line-height:1.45}.profile-session-list article{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line)}.profile-session-list article>div{display:grid;gap:2px;min-width:0}.profile-session-list article strong{font-size:10px}.profile-session-list article span{font-size:9px;color:var(--muted)}.profile-session-list .text-action{flex:none}.profile-notifications p{margin:0;font-size:10px;line-height:1.5;color:var(--muted)}.profile-activity{grid-column:1/-1}.profile-activity-list{display:grid}.profile-activity-list article{display:grid;grid-template-columns:minmax(125px,.8fr) minmax(150px,1fr) minmax(120px,.8fr) minmax(90px,.5fr);gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:9px}.profile-activity-list time,.profile-activity-list span,.profile-activity-list small{color:var(--muted)}.profile-activity-list strong{font-size:9px}.profile-activity-list>*{overflow-wrap:anywhere}
+.profile-doctor-specialties{display:grid;gap:6px;margin-top:10px;padding-top:9px;border-top:1px solid var(--line)}.profile-doctor-specialties>strong{font-size:10px}.profile-doctor-specialties>div{display:flex;flex-wrap:wrap;gap:5px}.profile-doctor-specialties>div span{padding:3px 6px;border-radius:3px;background:var(--surface2);font-size:9px}.profile-doctor-specialties small,.profile-doctor-specialties p{margin:0;color:var(--muted);font-size:9px}.profile-doctor-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:9px}.profile-doctor-metrics article{display:grid;gap:2px;padding:7px;border:1px solid var(--line);border-radius:3px}.profile-doctor-metrics strong{font-size:13px;font-variant-numeric:tabular-nums}.profile-doctor-metrics span{font-size:8px;color:var(--muted)}
+@media(max-width:760px){.profile-dashboard{grid-template-columns:1fr}.profile-activity{grid-column:auto}.profile-activity-list article{grid-template-columns:1fr 1fr}.profile-form{grid-template-columns:1fr 1fr}}
+@media(max-width:420px){.profile-form{grid-template-columns:1fr}.profile-form>small{grid-column:auto}.profile-activity-list article{grid-template-columns:1fr}.profile-doctor-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 .billing-workspace{max-width:1500px;min-height:100vh;margin:0 auto;padding:24px clamp(14px,2.6vw,36px) 48px}
 .billing-header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;border-bottom:1px solid var(--line);padding-bottom:18px}
@@ -439,6 +605,8 @@ a.btn:hover{text-decoration:none}
 .interaction-severity{justify-self:start;border-radius:3px;padding:2px 6px;font-size:9px;font-weight:800;background:var(--warnbg);color:var(--warn)}
 .interaction-severity.major,.interaction-severity.contraindicated{background:var(--badbg);color:var(--bad)}
 .clinical-investigation-grid{display:grid;grid-template-columns:minmax(300px,.72fr) minmax(0,1.5fr);gap:14px;align-items:start}
+.lab-sample-lookup{margin-bottom:12px;padding:10px;border-left:3px solid var(--brand);background:var(--surface2)}.lab-sample-lookup small{font-size:10px;color:var(--muted)}
+.clinical-turnaround-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}.clinical-turnaround-metrics article{display:grid;gap:4px;padding:11px;border:1px solid var(--line);border-radius:4px;background:var(--bg)}.clinical-turnaround-metrics span{font-size:10px;color:var(--muted)}.clinical-turnaround-metrics strong{font-size:16px;font-variant-numeric:tabular-nums}
 .department-select{max-width:190px;padding:7px 8px;border-radius:4px}
 .clinical-order-list{display:grid;gap:9px}
 .clinical-order{display:grid;gap:8px;border:1px solid var(--line);border-radius:4px;padding:12px}
@@ -461,7 +629,7 @@ a.btn:hover{text-decoration:none}
 .clinical-alert-strip button.critical{color:var(--bad)}.clinical-alert-strip button span{font-size:11px;font-weight:700}.clinical-alert-strip button small{font-size:10px;color:var(--muted)}
 @media(max-width:1040px){.dosage-builder{grid-template-columns:repeat(3,minmax(0,1fr))}.clinical-prescription-layout{grid-template-columns:minmax(0,1.4fr) minmax(220px,.7fr)}}
 @media(max-width:800px){.clinical-prescription-layout,.clinical-master-grid,.clinical-investigation-grid{grid-template-columns:1fr}.clinical-side-panel{grid-template-columns:repeat(2,minmax(0,1fr))}.clinical-side-section+.clinical-side-section{border-top:0;border-left:1px solid var(--line);padding:0 0 0 12px}}
-@media(max-width:620px){.clinical-workspace{padding:16px 12px 32px}.clinical-header{align-items:stretch}.clinical-form-row,.drug-primary,.clinical-drug-form,.clinical-brand-form,.clinical-rule-form{grid-template-columns:1fr}.dosage-builder{grid-template-columns:repeat(2,minmax(0,1fr))}.clinical-side-panel{grid-template-columns:1fr}.clinical-side-section+.clinical-side-section{border-left:0;border-top:1px solid var(--line);padding:12px 0 0}.clinical-registration{align-items:stretch;flex-direction:column}.clinical-form-end{align-items:flex-start;flex-direction:column}.clinical-form-end small{max-width:100%}.report-upload{grid-template-columns:1fr 1fr}.clinical-alert-strip{grid-template-columns:1fr}.clinical-alert-strip button{border-left:0;border-top:1px solid var(--line);padding:7px 0}}
+@media(max-width:620px){.clinical-workspace{padding:16px 12px 32px}.clinical-header{align-items:stretch}.clinical-form-row,.drug-primary,.clinical-drug-form,.clinical-brand-form,.clinical-rule-form{grid-template-columns:1fr}.dosage-builder{grid-template-columns:repeat(2,minmax(0,1fr))}.clinical-side-panel{grid-template-columns:1fr}.clinical-side-section+.clinical-side-section{border-left:0;border-top:1px solid var(--line);padding:12px 0 0}.clinical-registration{align-items:stretch;flex-direction:column}.clinical-form-end{align-items:flex-start;flex-direction:column}.clinical-form-end small{max-width:100%}.report-upload{grid-template-columns:1fr 1fr}.clinical-alert-strip{grid-template-columns:1fr}.clinical-alert-strip button{border-left:0;border-top:1px solid var(--line);padding:7px 0}.clinical-turnaround-metrics{grid-template-columns:1fr}.lab-sample-lookup{margin-bottom:8px}}
 
 .ipd-workspace{max-width:1600px;min-height:100vh;margin:0 auto;padding:24px clamp(14px,2.6vw,36px) 48px}
 .ipd-header,.ipd-section-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
@@ -521,3 +689,131 @@ a.btn:hover{text-decoration:none}
 .ipd-bed-maintenance{margin-top:12px}.ipd-bed-maintenance form{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}.ipd-bed-maintenance strong{margin-right:auto;font-size:13px}.ipd-bed-maintenance label{display:grid;gap:4px;font-size:10px;color:var(--muted)}.ipd-bed-maintenance .inp{min-width:190px;padding:7px;font-size:11px}
 .ipd-service-tax{margin:0;color:var(--muted);font-size:10px}
 @media(max-width:560px){.ipd-bed-maintenance form{align-items:stretch;flex-direction:column}.ipd-bed-maintenance strong{margin:0}.ipd-bed-maintenance .inp{min-width:0}}
+.pharmacy-workspace{max-width:1500px;min-height:100vh;margin:0 auto;padding:24px clamp(14px,2.6vw,36px) 48px;display:grid;align-content:start;gap:14px}
+.pharmacy-header,.pharmacy-panel-head,.pharmacy-header-tools{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.pharmacy-header{padding-bottom:16px;border-bottom:1px solid var(--line)}
+.pharmacy-header h1{margin:4px 0;font-size:25px;line-height:1.2}.pharmacy-header p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.pharmacy-header-tools>span{color:var(--muted);font-size:10px}
+.pharmacy-kicker{font-size:10px;font-weight:800;color:var(--brand-d)}
+.pharmacy-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--surface);border:1px solid var(--line);border-radius:4px}
+.pharmacy-stats>div{display:grid;gap:3px;padding:12px 15px;border-right:1px solid var(--line)}.pharmacy-stats>div:last-child{border:0}
+.pharmacy-stats span{font-size:11px;color:var(--muted)}.pharmacy-stats strong{font-size:22px;font-variant-numeric:tabular-nums}
+.alert-number{color:var(--bad)}
+.pharmacy-tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line)}
+.pharmacy-tabs button{flex:none;padding:10px 12px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);font-size:12px;font-weight:650;white-space:nowrap}
+.pharmacy-tabs button.active{border-bottom-color:var(--brand);color:var(--brand-d)}
+.pharmacy-panel{min-width:0;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:4px}
+.pharmacy-panel-head{margin-bottom:10px}.pharmacy-panel-head h2{margin:3px 0 0;font-size:15px}.pharmacy-count{color:var(--muted);font-size:10px}
+.pharmacy-overview-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);gap:12px}
+.pharmacy-overview-queue-row,.pharmacy-risk-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--line)}
+.pharmacy-overview-queue-row>div{display:grid;gap:2px}.pharmacy-overview-queue-row strong{font-size:12px}.pharmacy-overview-queue-row span:not(.pharmacy-status),.pharmacy-risk-row span{font-size:10px;color:var(--muted)}
+.pharmacy-risk-row strong{font-size:13px;font-variant-numeric:tabular-nums}
+.pharmacy-controlled-register{display:grid;gap:8px}.pharmacy-controlled-summary{display:flex;align-items:baseline;gap:9px}.pharmacy-controlled-summary strong{font-size:21px}.pharmacy-controlled-summary span{font-size:11px;color:var(--muted)}
+.pharmacy-transaction-note,.pharmacy-capability-note{margin:8px 0 0;color:var(--muted);font-size:10px;line-height:1.55}
+.pharmacy-transaction-banner{display:grid;gap:3px;padding:12px 14px;border-left:3px solid var(--ok);background:var(--okbg)}
+.pharmacy-transaction-banner strong{font-size:12px}.pharmacy-transaction-banner span,.pharmacy-transaction-banner small{font-size:10px;line-height:1.5}.pharmacy-transaction-banner small{color:var(--muted)}
+.pharmacy-erp-workspace{display:grid;gap:12px}.pharmacy-erp-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:4px 0 10px;border-bottom:1px solid var(--line)}.pharmacy-erp-heading h2{margin:3px 0 0;font-size:17px}.pharmacy-erp-heading>.pharmacy-count{padding-bottom:2px}
+.pharmacy-erp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}.pharmacy-erp-panel{padding:12px}.pharmacy-erp-panel .pharmacy-panel-head{margin-bottom:6px}
+.pharmacy-erp-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line)}.pharmacy-erp-row>span{font-size:10px;line-height:1.4}.pharmacy-erp-state{flex:none;padding:3px 6px;border-radius:3px;font-size:9px;font-weight:750}.pharmacy-erp-state.live{background:var(--okbg);color:var(--ok)}.pharmacy-erp-state.setup{background:var(--surface2);color:var(--muted)}
+.pharmacy-erp-billing{display:grid;grid-template-columns:minmax(210px,.8fr) minmax(0,1.5fr) auto;align-items:center;gap:14px;padding:12px 14px;border-left:3px solid var(--warn);background:var(--warnbg)}.pharmacy-erp-billing>div{display:grid;gap:4px}.pharmacy-erp-billing strong{font-size:11px}.pharmacy-erp-billing p{margin:0;font-size:10px;line-height:1.5}
+.pharmacy-prescription-list,.pharmacy-inventory-list{display:grid;gap:9px}
+.pharmacy-prescription,.pharmacy-inventory-item{min-width:0;padding:12px;border:1px solid var(--line);border-radius:4px}
+.pharmacy-prescription-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.pharmacy-prescription-head>div{display:grid;gap:2px}.pharmacy-prescription-head strong{font-size:12px}.pharmacy-prescription-head span{font-size:10px;color:var(--muted)}
+.pharmacy-status{flex:none;padding:3px 6px;border-radius:3px;background:var(--surface2);font-size:9px;font-weight:750}.pharmacy-status.issued,.pharmacy-status.partial,.pharmacy-status.partially_dispensed{background:var(--warnbg);color:var(--warn)}.pharmacy-status.invalid{background:var(--badbg);color:var(--bad)}
+.pharmacy-diagnosis{margin:6px 0;color:var(--muted);font-size:10px}
+.pharmacy-safety-flags{display:grid;gap:4px;margin:8px 0;padding:8px 10px;border-left:3px solid var(--warn);background:var(--warnbg)}
+.pharmacy-safety-flags>strong{font-size:10px}.pharmacy-safety-flags span{font-size:10px;line-height:1.45}.pharmacy-safety-flags b{color:var(--warn)}
+.pharmacy-prescription-items{display:grid;border-top:1px solid var(--line)}
+.pharmacy-prescription-item{display:grid;grid-template-columns:minmax(180px,1fr) minmax(160px,1fr) auto;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:10px}
+.pharmacy-prescription-item small{display:inline-block;margin-left:4px;padding:2px 4px;background:var(--surface2);font-size:8px;color:var(--muted)}
+.pharmacy-prescription-item>span:nth-child(2){color:var(--muted)}.pharmacy-prescription-item>b{font-size:10px;white-space:nowrap}
+.pharmacy-prescription-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:8px}.pharmacy-prescription-foot small{font-size:9px;color:var(--muted)}
+.pharmacy-inventory-layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(280px,.7fr);gap:12px;align-items:start}
+.pharmacy-stock-forms,.pharmacy-master-forms{display:grid;align-content:start;gap:12px}
+.pharmacy-stock-forms form,.pharmacy-master-forms form{display:grid;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--line)}.pharmacy-stock-forms form:last-child,.pharmacy-master-forms form:last-child{padding-bottom:0;border-bottom:0}
+.pharmacy-stock-forms label,.pharmacy-master-forms label{display:grid;gap:4px;color:var(--muted);font-size:10px;font-weight:650}
+.pharmacy-stock-forms .inp,.pharmacy-master-forms .inp{min-width:0;padding:7px 8px;border-radius:3px;font-size:11px}
+.pharmacy-form-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.pharmacy-inventory-item{padding:10px}.pharmacy-inventory-item .pharmacy-prescription-head>b{font-size:12px}.pharmacy-batch-list{display:grid;margin-top:8px;border-top:1px solid var(--line)}
+.pharmacy-batch{display:grid;grid-template-columns:1fr 1fr auto auto;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:10px}.pharmacy-batch span:nth-child(2){color:var(--muted)}.pharmacy-batch.expired{color:var(--bad)}.pharmacy-batch em{font-size:9px;font-style:normal;font-weight:700}
+.pharmacy-alert-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start}.pharmacy-alert-panel>article{display:grid;gap:2px;padding:8px 0;border-top:1px solid var(--line)}.pharmacy-alert-panel>article b{font-size:11px}.pharmacy-alert-panel>article span{font-size:10px;color:var(--muted)}.pharmacy-alert-panel.low .pharmacy-panel-head>strong,.pharmacy-alert-panel.expired .pharmacy-panel-head>strong{color:var(--bad)}
+.pharmacy-master-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(310px,.8fr);gap:12px;align-items:start}
+.pharmacy-master-list{display:grid}.pharmacy-master-list article{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--line)}.pharmacy-master-list article>div:first-child{display:grid;gap:2px}.pharmacy-master-list strong{font-size:11px}.pharmacy-master-list article>div>span{font-size:9px;color:var(--muted)}
+.pharmacy-brand-list{display:flex;justify-content:flex-end;gap:4px;flex-wrap:wrap}.pharmacy-brand-list span{padding:3px 5px;background:var(--surface2);font-size:9px;color:var(--muted)}
+.pharmacy-interaction-list{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}.pharmacy-interaction-list>article{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;padding:8px 0;border-top:1px solid var(--line)}.pharmacy-interaction-list article>div{display:grid;gap:2px}.pharmacy-interaction-list article strong{font-size:10px}.pharmacy-interaction-list article span:not(.pharmacy-severity){font-size:9px;color:var(--muted);line-height:1.45}
+.pharmacy-severity{align-self:start;padding:3px 5px;border-radius:3px;background:var(--warnbg);color:var(--warn);font-size:8px;font-weight:800}.pharmacy-severity.major,.pharmacy-severity.contraindicated{background:var(--badbg);color:var(--bad)}
+.pharmacy-history-search{display:grid;gap:3px;min-width:200px;color:var(--muted);font-size:10px}.pharmacy-history-search .inp{padding:6px 8px;font-size:11px}
+.pharmacy-history-list{display:grid}.pharmacy-history-list article{padding:10px 0;border-top:1px solid var(--line)}.pharmacy-history-list article>header{display:flex;justify-content:space-between;gap:10px}.pharmacy-history-list article>header>div{display:grid;gap:2px}.pharmacy-history-list article strong{font-size:11px}.pharmacy-history-list article header span{font-size:9px;color:var(--muted)}.pharmacy-history-list article>div:last-child{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.pharmacy-history-list article>div:last-child span{padding:3px 6px;background:var(--surface2);font-size:9px;color:var(--muted)}
+.pharmacy-register-list{display:grid}.pharmacy-register-list>article{display:grid;gap:8px;padding:10px 0;border-top:1px solid var(--line)}.pharmacy-register-list>article>header,.pharmacy-register-list>article>footer{display:flex;justify-content:space-between;gap:10px}.pharmacy-register-list>article>header>div{display:grid;gap:2px}.pharmacy-register-list>article>header span,.pharmacy-register-list time,.pharmacy-register-list footer>span{font-size:9px;color:var(--muted)}.pharmacy-register-lines{display:grid;gap:5px}.pharmacy-register-lines>div{display:flex;justify-content:space-between;gap:10px;padding:6px 8px;background:var(--surface2)}.pharmacy-register-lines strong,.pharmacy-register-lines span{font-size:10px}.pharmacy-register-lines span{color:var(--muted);text-align:right}.pharmacy-register-list footer p{margin:0;font-size:10px;white-space:pre-wrap}
+.pharmacy-safety-review{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:8px;padding:8px 10px;border:1px solid var(--warn);background:var(--warnbg);font-size:11px;line-height:1.4}.pharmacy-safety-review input{margin:1px 0 0;accent-color:var(--warn)}.pharmacy-note-field{display:grid;gap:5px;font-size:10px;color:var(--muted)}.pharmacy-note-field .inp{min-height:72px;padding:8px;font-size:11px;resize:vertical}
+.pharmacy-empty{margin:8px 0;color:var(--muted);font-size:11px}
+.pharmacy-transaction-note{margin:0 0 8px;padding:8px 10px;border-left:3px solid var(--ok);background:var(--okbg);color:var(--text)}
+.pharmacy-dispense-modal{width:min(820px,100%)}.pharmacy-dispense-lines{display:grid;gap:8px;max-height:60vh;overflow:auto}.pharmacy-dispense-line{display:grid;gap:8px;padding:10px;border:1px solid var(--line);border-radius:4px}.pharmacy-dispense-line>div:first-child{display:grid;gap:2px}.pharmacy-dispense-line>div:first-child strong{font-size:11px}.pharmacy-dispense-line>div:first-child span,.pharmacy-dispense-line>div:first-child small{font-size:9px;color:var(--muted)}
+.substitution-note{padding:8px;border-left:3px solid var(--warn);background:var(--warnbg)}
+@media(max-width:1000px){.pharmacy-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.pharmacy-stats>div:nth-child(2){border-right:0}.pharmacy-stats>div:nth-child(-n+2){border-bottom:1px solid var(--line)}.pharmacy-overview-grid,.pharmacy-master-layout{grid-template-columns:1fr}}
+@media(max-width:760px){.pharmacy-inventory-layout{grid-template-columns:1fr}.pharmacy-alert-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.pharmacy-workspace{padding:16px 10px 32px}.pharmacy-header{align-items:flex-start;flex-direction:column}.pharmacy-header h1{font-size:21px}.pharmacy-header-tools{width:100%;justify-content:space-between}.pharmacy-stats>div{padding:10px}.pharmacy-stats strong{font-size:19px}.pharmacy-tabs{margin-right:-10px}.pharmacy-panel{padding:11px}.pharmacy-alert-grid,.pharmacy-erp-grid{grid-template-columns:1fr}.pharmacy-erp-heading{align-items:flex-start;flex-direction:column}.pharmacy-erp-billing{grid-template-columns:1fr;gap:8px}.pharmacy-prescription-item{grid-template-columns:1fr auto}.pharmacy-prescription-item>span:nth-child(2){grid-column:1/-1;grid-row:2}.pharmacy-form-row{grid-template-columns:1fr 1fr}.pharmacy-batch{grid-template-columns:1fr auto}.pharmacy-batch span:nth-child(2){grid-column:1}.pharmacy-master-list article{display:grid}.pharmacy-brand-list{justify-content:flex-start}.pharmacy-history-search{min-width:0}.pharmacy-panel-head:has(.pharmacy-history-search){align-items:stretch;flex-direction:column}}
+.nurse-dashboard{max-width:1600px;display:grid;gap:13px;padding:0 0 32px}.nurse-dashboard-header,.nurse-dashboard-panel>header{display:flex;align-items:center;justify-content:space-between;gap:12px}.nurse-dashboard-header{padding:0 0 12px;border-bottom:1px solid var(--line)}.nurse-dashboard-header h2{margin:3px 0;font-size:22px}.nurse-dashboard-header p{margin:0;color:var(--muted);font-size:11px}.nurse-dashboard-kicker{font-size:9px;font-weight:800;color:var(--brand-d)}.nurse-dashboard-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.nurse-dashboard-metrics article{min-width:0;display:grid;gap:3px;padding:11px 12px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}.nurse-dashboard-metrics span,.nurse-dashboard-metrics small{font-size:9px;color:var(--muted)}.nurse-dashboard-metrics strong{font-size:20px;font-variant-numeric:tabular-nums}.nurse-dashboard-metrics .nurse-metric-alert{color:var(--bad)}.nurse-dashboard-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.75fr);gap:12px;align-items:start}.nurse-dashboard-panel{min-width:0;padding:13px 14px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}.nurse-dashboard-panel>header{margin-bottom:8px}.nurse-dashboard-panel>header h3{margin:3px 0;font-size:14px}.nurse-admission-list,.nurse-due-list{display:grid}.nurse-admission-row{display:grid;gap:5px;padding:9px 0;border-top:1px solid var(--line)}.nurse-admission-primary{display:flex;justify-content:space-between;gap:8px}.nurse-admission-primary>div{display:grid;gap:2px}.nurse-admission-primary strong{font-size:11px}.nurse-admission-primary span,.nurse-admission-primary>b,.nurse-admission-row p,.nurse-admission-status span,.nurse-latest-note{font-size:9px;color:var(--muted)}.nurse-admission-primary>b{font-weight:650;text-align:right}.nurse-admission-row p{margin:0;color:var(--text)}.nurse-admission-status{display:flex;flex-wrap:wrap;gap:5px 10px}.nurse-status-alert{color:var(--bad)!important;font-weight:750}.nurse-latest-note{overflow:hidden;max-width:100%;text-overflow:ellipsis;white-space:nowrap}.nurse-admission-row>.text-action{justify-self:start;padding-left:0}.nurse-due-list article{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line)}.nurse-due-list article>div{display:grid;gap:2px}.nurse-due-list strong{font-size:10px}.nurse-due-list span,.nurse-due-list small{font-size:9px;color:var(--muted)}.nurse-bed-summary{display:grid;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}.nurse-bed-summary>span{font-size:9px;font-weight:800;color:var(--brand-d)}.nurse-bed-summary>div{display:flex;justify-content:space-between;gap:8px}.nurse-bed-summary strong{font-size:9px}.nurse-bed-summary small{font-size:9px;color:var(--muted)}.nurse-dashboard-empty{margin:6px 0;color:var(--muted);font-size:10px;line-height:1.45}
+@media(max-width:1000px){.nurse-dashboard-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.nurse-dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.nurse-dashboard{padding-bottom:24px}.nurse-dashboard-header{align-items:flex-start;flex-direction:column}.nurse-dashboard-panel{padding:10px}.nurse-admission-primary{flex-direction:column}.nurse-admission-primary>b{text-align:left}.nurse-bed-summary>div{flex-direction:column;gap:2px}}
+.ipd-operations{max-width:1600px;min-height:100vh;margin:0 auto;padding:24px clamp(14px,2.6vw,36px) 48px;display:grid;gap:14px}
+.ipd-admin-main{min-width:0}.ipd-admin-main .ipd-operations{max-width:none;min-height:0;padding:20px 0 36px}
+.ipd-operations-header,.ipd-ops-panel-head,.ipd-operations-actions{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.ipd-operations-header{padding-bottom:16px;border-bottom:1px solid var(--line)}
+.ipd-operations-header h1{margin:4px 0;font-size:25px;line-height:1.2}
+.ipd-operations-header p{margin:0;color:var(--muted);font-size:13px}
+.ipd-ops-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:var(--surface);border:1px solid var(--line);border-radius:5px}
+.ipd-ops-metrics article{min-width:0;padding:13px 15px;border-right:1px solid var(--line)}
+.ipd-ops-metrics article:last-child{border:0}
+.ipd-ops-metrics span{display:block;color:var(--muted);font-size:11px}
+.ipd-ops-metrics strong{display:block;margin:3px 0;font-size:22px;font-variant-numeric:tabular-nums}
+.ipd-ops-metrics small{display:block;color:var(--muted);font-size:10px}
+.ipd-ops-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(270px,.7fr);gap:14px;align-items:start}
+.ipd-ops-panel{min-width:0;padding:15px;background:var(--surface);border:1px solid var(--line);border-radius:5px}
+.ipd-ops-panel-head{margin-bottom:12px}
+.ipd-ops-panel-head h2{margin:3px 0 0;font-size:16px}
+.ipd-ops-panel-head>span{color:var(--muted);font-size:11px}
+.ipd-ops-bed-legend{display:flex;gap:10px 16px;flex-wrap:wrap;padding:9px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.ipd-ops-bed-legend span{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:10px}
+.ipd-ops-bed-legend i{width:8px;height:8px;border-radius:2px;background:var(--ok)}
+.ipd-ops-bed-legend i.occupied{background:var(--bad)}.ipd-ops-bed-legend i.cleaning{background:var(--warn)}.ipd-ops-bed-legend i.offline{background:var(--muted)}
+.ipd-ops-wards{display:grid;gap:12px;margin-top:12px}
+.ipd-ops-ward{min-width:0}
+.ipd-ops-ward>header{display:flex;justify-content:space-between;gap:10px;margin-bottom:5px}
+.ipd-ops-ward>header>div{display:grid;gap:1px}.ipd-ops-ward>header strong{font-size:12px}.ipd-ops-ward>header span,.ipd-ops-ward>header small{color:var(--muted);font-size:10px}
+.ipd-ops-occupancy{height:3px;margin-bottom:7px;background:var(--surface2)}.ipd-ops-occupancy i{display:block;height:100%;background:var(--brand)}
+.ipd-ops-bed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:5px}
+.ipd-ops-bed{min-width:0;min-height:48px;display:grid;align-content:start;gap:2px;padding:6px;border:1px solid var(--line);border-left:3px solid var(--ok);background:var(--okbg);border-radius:3px}
+.ipd-ops-bed strong{font-size:11px}.ipd-ops-bed span{overflow:hidden;color:var(--muted);font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+.ipd-ops-bed.occupied{border-left-color:var(--bad);background:var(--badbg)}.ipd-ops-bed.cleaning{border-left-color:var(--warn);background:var(--warnbg)}.ipd-ops-bed.out_of_service{border-left-color:var(--muted);background:var(--surface2)}
+.ipd-ops-alert-list{display:grid}
+.ipd-ops-alert-list article{display:grid;grid-template-columns:23px minmax(0,1fr) auto;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.ipd-ops-alert-mark{display:grid;width:21px;height:21px;place-items:center;border-radius:50%;background:var(--warnbg);color:var(--warn);font-size:10px;font-weight:800}
+.ipd-ops-alert-list article>div{display:grid;gap:2px;min-width:0}.ipd-ops-alert-list strong{font-size:11px}.ipd-ops-alert-list article>div span{overflow:hidden;color:var(--muted);font-size:9px;text-overflow:ellipsis;white-space:nowrap}.ipd-ops-alert-list article>b{font-size:10px;white-space:nowrap}
+.ipd-ops-text-link{display:inline-flex;gap:6px;margin-top:12px;color:var(--brand-d);font-size:11px;font-weight:700}
+.ipd-ops-date{display:grid;gap:3px;min-width:150px;color:var(--muted);font-size:10px}.ipd-ops-date .inp{padding:6px;font-size:11px}
+.ipd-ops-ot-summary{display:flex;gap:8px 16px;flex-wrap:wrap;margin-bottom:12px;padding:9px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);color:var(--muted);font-size:10px}
+.ipd-ops-ot-summary strong{color:var(--text);font-size:13px}
+.ipd-ops-timeline-scroll{overflow-x:auto;padding-bottom:6px}
+.ipd-ops-timeline{display:grid;grid-template-columns:110px repeat(48,minmax(18px,1fr));min-width:1010px;position:relative}
+.ipd-ops-timeline-corner{grid-column:1;padding:5px 7px;color:var(--muted);font-size:10px;font-weight:700}
+.ipd-ops-time-label{grid-row:1;padding:5px 0;color:var(--muted);font-size:9px;text-align:left;white-space:nowrap}
+.ipd-ops-time-label:nth-of-type(2n){border-left:1px solid var(--line)}
+.ipd-ops-theatre-row{grid-column:1/-1;display:grid;grid-template-columns:110px repeat(48,minmax(18px,1fr));grid-template-rows:auto;min-height:62px;position:relative;border-top:1px solid var(--line)}
+.ipd-ops-theatre-row>strong{grid-column:1;grid-row:1;z-index:2;align-self:center;padding:7px;overflow:hidden;background:var(--surface);font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.ipd-ops-hour-lines{grid-column:2/-1;grid-row:1;position:absolute;inset:0;background-image:repeating-linear-gradient(to right,transparent 0,transparent calc(4.166% - 1px),var(--line) calc(4.166% - 1px),var(--line) 4.166%);pointer-events:none}
+.ipd-ops-case{grid-row:1;z-index:1;align-self:center;min-width:0;display:grid;gap:1px;overflow:hidden;margin:5px 1px;padding:5px 6px;border-left:3px solid var(--brand);border-radius:3px;background:var(--brand-soft);color:var(--text)}
+.ipd-ops-case.in_progress{border-left-color:var(--warn);background:var(--warnbg)}.ipd-ops-case.completed{border-left-color:var(--ok);background:var(--okbg)}
+.ipd-ops-case strong,.ipd-ops-case span,.ipd-ops-case small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ipd-ops-case strong{font-size:9px}.ipd-ops-case span,.ipd-ops-case small{font-size:8px;color:var(--muted)}
+.ipd-ops-no-theatres{grid-column:1/-1;padding:16px}
+.ipd-ops-surgeon-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.ipd-ops-surgeon-grid h3{margin:0 0 8px;font-size:12px}
+.ipd-ops-surgeon,.ipd-ops-cancelled{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:10px}
+.ipd-ops-cancelled{display:grid;gap:2px}.ipd-ops-cancelled span{color:var(--muted);font-size:9px}
+.ipd-ops-limit-note{margin:12px 0 0;padding:9px 10px;border-left:3px solid var(--warn);background:var(--warnbg);font-size:10px;line-height:1.55}
+.ipd-ops-admissions .tw{overflow-x:auto}.ipd-ops-admissions table{min-width:850px;font-size:11px}.ipd-ops-admissions th,.ipd-ops-admissions td{padding:8px}
+@media(max-width:1000px){.ipd-ops-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.ipd-ops-metrics article:nth-child(3){border-right:0}.ipd-ops-metrics article:nth-child(-n+3){border-bottom:1px solid var(--line)}}
+@media(max-width:760px){.ipd-ops-grid{grid-template-columns:1fr}.ipd-ops-alert-list{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:12px}}
+@media(max-width:560px){.ipd-operations{padding:16px 10px 32px}.ipd-operations-header{align-items:flex-start;flex-direction:column}.ipd-operations-header h1{font-size:21px}.ipd-operations-actions{width:100%;justify-content:flex-start}.ipd-ops-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.ipd-ops-metrics article:nth-child(3){border-right:1px solid var(--line)}.ipd-ops-metrics article:nth-child(2n){border-right:0}.ipd-ops-metrics article:nth-child(-n+4){border-bottom:1px solid var(--line)}.ipd-ops-metrics article{padding:10px}.ipd-ops-metrics strong{font-size:19px}.ipd-ops-panel{padding:11px}.ipd-ops-panel-head{align-items:flex-start}.ipd-ops-date{min-width:125px}.ipd-ops-alert-list{grid-template-columns:1fr}.ipd-ops-surgeon-grid{grid-template-columns:1fr}}

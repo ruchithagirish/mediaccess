@@ -1,11 +1,12 @@
-import { Prisma, PrescriptionStatus, Role, UserStatus, InventoryMovementType, DispenseStatus } from "@prisma/client";
+import { Prisma, PrescriptionStatus, Role, UserStatus, InventoryMovementType, DispenseStatus, DrugSchedule } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
-import { authenticate, reverifyRole, requireRole } from "../../middleware/auth";
+import { authenticate } from "../../middleware/auth";
+import { reverifyRole, requireRole } from "../../middleware/rbac";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../lib/errors";
 import { wrap } from "../../lib/async";
-import { audit } from "../../lib/audit";
+import { audit } from "../../middleware/audit";
 import { verifyPrescriptionSignature } from "../../lib/prescription-signature";
 
 const router = Router();
@@ -18,6 +19,8 @@ const receiveSchema = z.object({
   note: z.string().trim().max(300).optional(),
 });
 const dispenseSchema = z.object({
+  pharmacistNote: z.string().trim().max(1000).optional(),
+  safetyWarningsReviewed: z.boolean().default(false),
   allocations: z.array(z.object({
     prescriptionItemId: z.string().min(1),
     batches: z.array(z.object({ batchId: z.string().min(1), quantity: z.number().int().positive() })).min(1).max(50),
@@ -118,6 +121,37 @@ router.get("/pharmacy/alerts", authenticate, requireRole(...pharmacyRoles), reve
   res.json({ success: true, data: { lowStock, nearExpiry, expired } });
 }));
 
+router.get("/pharmacy/controlled-register", authenticate, requireRole(...pharmacyRoles), reverifyRole(...pharmacyRoles), wrap(async (req, res) => {
+  const schedules = [DrugSchedule.SCHEDULE_H, DrugSchedule.SCHEDULE_H1];
+  const dispenses = await prisma.dispense.findMany({
+    where: {
+      tenantId: req.tenantId!,
+      lines: { some: { prescriptionItem: { is: { drugGeneric: { is: { schedule: { in: schedules } } } } } } },
+    },
+    include: {
+      pharmacist: { select: { name: true } },
+      prescription: {
+        select: {
+          id: true,
+          issuedAt: true,
+          patient: { select: { mrn: true, user: { select: { name: true } } } },
+          doctor: { select: { user: { select: { name: true } } } },
+        },
+      },
+      lines: {
+        where: { prescriptionItem: { is: { drugGeneric: { is: { schedule: { in: schedules } } } } } },
+        include: {
+          prescriptionItem: { select: { genericName: true, brandName: true, strength: true } },
+          batch: { select: { batchNumber: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 500,
+  });
+  res.json({ success: true, data: { dispenses } });
+}));
+
 router.post("/pharmacy/inventory/items", authenticate, requireRole(...pharmacyRoles), reverifyRole(...pharmacyRoles), wrap(async (req, res) => {
   const body = z.object({ drugGenericId: z.string().min(1), reorderLevel: z.number().int().nonnegative().max(1_000_000).default(0) }).parse(req.body);
   const generic = await prisma.drugGeneric.findFirst({ where: { id: body.drugGenericId, tenantId: req.tenantId!, isActive: true }, select: { id: true } });
@@ -209,6 +243,8 @@ router.post("/pharmacy/prescriptions/:id/dispense", authenticate, requireRole(..
     });
     if (!prescription) throw new AppError(404, "PRESCRIPTION_NOT_DISPENSABLE", "Issued or partially dispensed prescription not found.");
     if (!verifyPrescriptionSignature(prescription)) throw new AppError(409, "PRESCRIPTION_SIGNATURE_INVALID", "Prescription integrity verification failed; contact the prescriber before dispensing.");
+    const safetyWarnings = Array.isArray(prescription.safetyWarnings) ? prescription.safetyWarnings : [];
+    if (safetyWarnings.length && !body.safetyWarningsReviewed) throw new AppError(422, "SAFETY_REVIEW_REQUIRED", "Review the prescription safety warnings before confirming dispense.");
 
     await tx.$queryRaw<Array<{ id: string }>>`SELECT "id" FROM "InventoryBatch" WHERE "tenantId" = ${req.tenantId!} AND "id" IN (${Prisma.join(allocationBatchIds)}) ORDER BY "id" FOR UPDATE`;
     const batches = await tx.inventoryBatch.findMany({
@@ -255,6 +291,8 @@ router.post("/pharmacy/prescriptions/:id/dispense", authenticate, requireRole(..
       data: {
         tenantId: req.tenantId!, prescriptionId: prescription.id, pharmacistId: req.user!.sub,
         idempotencyKey, status: complete ? DispenseStatus.COMPLETE : DispenseStatus.PARTIAL,
+        pharmacistNote: body.pharmacistNote || null,
+        safetyWarningsReviewed: body.safetyWarningsReviewed,
       },
     });
     for (const allocation of planned) {

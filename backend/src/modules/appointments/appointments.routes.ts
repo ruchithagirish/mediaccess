@@ -1,12 +1,19 @@
 import { Router, type RequestHandler } from "express";
 import { AppointmentStatus, Prisma, Role, UserStatus } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import rateLimit from "express-rate-limit";
 import { z } from "zod";
-import { authenticate, requireRole } from "../../middleware/auth";
+import { authenticate } from "../../middleware/auth";
+import { requireRole } from "../../middleware/rbac";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../lib/errors";
 import { wrap } from "../../lib/async";
-import { audit } from "../../lib/audit";
+import { audit } from "../../middleware/audit";
 import { notifyQueueChanged } from "../../lib/queue-events";
+import { config } from "../../config";
+import { hashToken, newRefreshToken, setAuthCookies, signAccessToken } from "../../lib/tokens";
+import { sendAppointmentConfirmation, sendPublicBookingOtp } from "../../lib/public-booking-notifications";
 
 const router = Router();
 const appointmentRoles = [Role.PATIENT, Role.RECEPTION, Role.DOCTOR, Role.ADMIN];
@@ -173,6 +180,206 @@ const updateSchema = z.object({
   reason: z.string().trim().max(500).nullable().optional(),
   status: z.nativeEnum(AppointmentStatus).optional(),
 }).refine((body) => Object.keys(body).length > 0, "Provide at least one appointment change.");
+
+const publicBookingSchema = z.object({
+  name: z.string().trim().min(3).max(100),
+  phone: z.string().transform((value) => value.replace(/\D/g, "").slice(-10)).refine((value) => /^[6-9]\d{9}$/.test(value)),
+  email: z.string().trim().toLowerCase().email(),
+  dob: dateSchema.refine((value) => new Date(`${value}T00:00:00.000Z`) < new Date(), "Enter a valid date of birth."),
+  doctorId: z.string().min(1),
+  date: dateSchema,
+  startTime: timeSchema,
+  reason: z.string().trim().max(500).optional(),
+});
+
+const publicBookingConfirmSchema = z.object({
+  verificationId: z.string().uuid(),
+  code: z.string().regex(/^\d{6}$/, "Enter the six-digit verification code."),
+  password: z.string().min(8).max(72)
+    .refine((value) => /[a-z]/.test(value) && /[A-Z]/.test(value) && /\d/.test(value) && /[^A-Za-z0-9]/.test(value),
+      "Password needs upper and lower case letters, a number and a symbol."),
+  consent: z.literal(true, { errorMap: () => ({ message: "Consent is required to create a patient account." }) }),
+});
+
+const bookingOtpLimiter = rateLimit({
+  windowMs: 15 * 60_000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, res) => res.status(429).json({ success: false, error: { code: "RATE_LIMITED", message: "Too many verification requests. Try again in 15 minutes." } }),
+});
+
+const bookingConfirmLimiter = rateLimit({
+  windowMs: 15 * 60_000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, res) => res.status(429).json({ success: false, error: { code: "RATE_LIMITED", message: "Too many booking attempts. Try again in 15 minutes." } }),
+});
+
+const publicOtpHash = (id: string, code: string) => crypto.createHmac("sha256", config.jwtAccessSecret).update(`${id}:${code}`).digest("hex");
+
+router.post(
+  "/public-bookings/otp",
+  bookingOtpLimiter,
+  wrap(async (req, res) => {
+    const body = publicBookingSchema.parse(req.body);
+    const slot = (await slotsForDoctor(req.tenantId!, body.doctorId, body.date)).find((item) => item.startTime === body.startTime);
+    if (!slot) throw new AppError(409, "SLOT_UNAVAILABLE", "That appointment slot is unavailable. Choose another time.");
+
+    await prisma.publicBookingVerification.deleteMany({
+      where: { tenantId: req.tenantId!, OR: [{ expiresAt: { lte: new Date() } }, { consumedAt: { not: null } }] },
+    });
+
+    const verificationId = crypto.randomUUID();
+    const code = crypto.randomInt(100000, 1000000).toString();
+    const verification = await prisma.publicBookingVerification.create({
+      data: {
+        id: verificationId,
+        tenantId: req.tenantId!,
+        name: body.name,
+        phone: body.phone,
+        email: body.email,
+        dob: calendarDate(body.dob),
+        doctorId: body.doctorId,
+        scheduledFor: calendarDate(body.date),
+        startTime: slot.startTime,
+        reason: body.reason || null,
+        otpHash: publicOtpHash(verificationId, code),
+        expiresAt: new Date(Date.now() + 10 * 60_000),
+      },
+    });
+
+    const deliveryConfigured = Boolean(
+      (process.env.SMTP_HOST && process.env.SMTP_FROM) ||
+      (process.env.MSG91_AUTH_KEY && process.env.MSG91_OTP_TEMPLATE_ID) ||
+      (process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID && process.env.WHATSAPP_OTP_TEMPLATE),
+    );
+    if (deliveryConfigured) {
+      try {
+        await sendPublicBookingOtp({ name: body.name, phone: body.phone, email: body.email, code });
+      } catch {
+        await prisma.publicBookingVerification.delete({ where: { id: verification.id } });
+        throw new AppError(503, "OTP_DELIVERY_FAILED", "We could not send a verification code. Please try again later.");
+      }
+    } else if (config.isProd) {
+      await prisma.publicBookingVerification.delete({ where: { id: verification.id } });
+      throw new AppError(503, "OTP_DELIVERY_UNAVAILABLE", "Appointment verification is temporarily unavailable.");
+    }
+
+    res.status(201).json({
+      success: true,
+      data: {
+        verificationId,
+        expiresInSeconds: 600,
+        ...(config.isProd ? {} : { developmentCode: code }),
+      },
+    });
+  }),
+);
+
+router.post(
+  "/public-bookings/confirm",
+  bookingConfirmLimiter,
+  wrap(async (req, res) => {
+    const body = publicBookingConfirmSchema.parse(req.body);
+    const verification = await prisma.publicBookingVerification.findFirst({ where: { id: body.verificationId, tenantId: req.tenantId! } });
+    if (!verification) {
+      throw new AppError(410, "OTP_EXPIRED", "This verification request has expired. Start booking again.");
+    }
+    if (verification.consumedAt || verification.expiresAt <= new Date() || verification.attempts >= 5) {
+      await prisma.publicBookingVerification.delete({ where: { id: verification.id } });
+      throw new AppError(410, "OTP_EXPIRED", "This verification request has expired. Start booking again.");
+    }
+
+    const expected = Buffer.from(verification.otpHash, "hex");
+    const supplied = Buffer.from(publicOtpHash(verification.id, body.code), "hex");
+    if (expected.length !== supplied.length || !crypto.timingSafeEqual(expected, supplied)) {
+      await prisma.publicBookingVerification.update({ where: { id: verification.id }, data: { attempts: { increment: 1 } } });
+      throw new AppError(400, "INVALID_OTP", "That verification code is not correct.");
+    }
+
+    const existing = await prisma.user.findFirst({
+      where: { tenantId: req.tenantId!, OR: [{ email: verification.email }, { phone: verification.phone }] },
+      select: { id: true },
+    });
+    if (existing) throw new AppError(409, "ACCOUNT_EXISTS", "An account already uses this email or mobile. Please sign in to book.");
+
+    const slot = (await slotsForDoctor(req.tenantId!, verification.doctorId, verification.scheduledFor.toISOString().slice(0, 10)))
+      .find((item) => item.startTime === verification.startTime);
+    if (!slot) throw new AppError(409, "SLOT_UNAVAILABLE", "That appointment slot has just been booked. Choose another time.");
+
+    const mrn = "MA-" + crypto.randomBytes(4).toString("hex").toUpperCase();
+    const refresh = newRefreshToken();
+    const sessionId = crypto.randomUUID();
+    let created: { userId: string; appointment: AppointmentRecord };
+    try {
+      created = await prisma.$transaction(async (tx) => {
+        const current = await tx.publicBookingVerification.findFirst({
+          where: { id: verification.id, tenantId: req.tenantId!, consumedAt: null, expiresAt: { gt: new Date() }, attempts: { lt: 5 } },
+        });
+        if (!current) throw new AppError(410, "OTP_EXPIRED", "This verification request has expired. Start booking again.");
+
+        const user = await tx.user.create({
+          data: {
+            tenantId: req.tenantId!,
+            name: current.name,
+            email: current.email,
+            phone: current.phone,
+            passwordHash: await bcrypt.hash(body.password, 12),
+            roles: [Role.PATIENT],
+            status: UserStatus.ACTIVE,
+            patient: { create: { tenantId: req.tenantId!, mrn, dob: current.dob } },
+          },
+          include: { patient: true },
+        });
+        if (!user.patient) throw new AppError(500, "PATIENT_CREATE_FAILED", "Patient profile creation failed.");
+
+        const appointment = await tx.appointment.create({
+          data: {
+            tenantId: req.tenantId!,
+            patientId: user.patient.id,
+            doctorId: current.doctorId,
+            scheduledFor: current.scheduledFor,
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            reason: current.reason,
+          },
+          include: appointmentInclude,
+        });
+        await tx.publicBookingVerification.delete({ where: { id: current.id } });
+        await tx.refreshToken.create({
+          data: {
+            userId: user.id,
+            tokenHash: hashToken(refresh),
+            family: sessionId,
+            expiresAt: new Date(Date.now() + config.refreshTtlSec * 1000),
+          },
+        });
+        return { userId: user.id, appointment };
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        throw new AppError(409, "SLOT_UNAVAILABLE", "That appointment slot or contact detail has just been used. Please try again.");
+      }
+      throw error;
+    }
+
+    const patientUser = await prisma.user.findUnique({ where: { id: created.userId }, select: { roles: true, tenantId: true } });
+    if (patientUser) setAuthCookies(res, signAccessToken({ sub: created.userId, tid: patientUser.tenantId, roles: patientUser.roles, sid: sessionId }), refresh);
+    await audit(req, "PUBLIC_APPOINTMENT_BOOK", "Appointment", created.appointment.id, created.userId);
+    const appointment = serializeAppointment(created.appointment);
+    void sendAppointmentConfirmation({
+      name: appointment.patient.name,
+      phone: verification.phone,
+      email: verification.email,
+      doctor: appointment.doctor.name,
+      date: appointment.date,
+      time: appointment.startTime,
+    }).catch((error: unknown) => console.error("appointment notification dispatch failed", error));
+    res.status(201).json({ success: true, data: { appointment } });
+  }),
+);
 
 router.get(
   "/specialties",

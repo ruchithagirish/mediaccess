@@ -2,11 +2,12 @@ import PDFDocument from "pdfkit";
 import { AppointmentStatus, Prisma, Role } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
-import { authenticate, reverifyRole, requireRole } from "../../middleware/auth";
+import { authenticate } from "../../middleware/auth";
+import { reverifyRole, requireRole } from "../../middleware/rbac";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../lib/errors";
 import { wrap } from "../../lib/async";
-import { audit } from "../../lib/audit";
+import { audit } from "../../middleware/audit";
 import { notifyQueueChanged } from "../../lib/queue-events";
 
 const router = Router();

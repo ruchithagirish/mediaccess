@@ -5,11 +5,12 @@ import {
 } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
-import { authenticate, reverifyRole, requireRole } from "../../middleware/auth";
+import { authenticate } from "../../middleware/auth";
+import { reverifyRole, requireRole } from "../../middleware/rbac";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../lib/errors";
 import { wrap } from "../../lib/async";
-import { audit } from "../../lib/audit";
+import { audit } from "../../middleware/audit";
 
 const router = Router();
 const readRoles = [Role.ADMIN, Role.RECEPTION, Role.DOCTOR, Role.NURSE, Role.ACCOUNTANT];
@@ -380,8 +381,9 @@ router.post("/ipd/procedure-templates", authenticate, requireRole(...wardRoles),
 }));
 
 router.get("/ipd/ot/cases", authenticate, requireRole(...otRoles), reverifyRole(...otRoles), wrap(async (req, res) => {
+  const includeCancelled = req.query.includeCancelled === "true";
   const cases = await prisma.oTCase.findMany({
-    where: { tenantId: req.tenantId!, status: { not: OTCaseStatus.CANCELLED } },
+    where: { tenantId: req.tenantId!, ...(!includeCancelled && { status: { not: OTCaseStatus.CANCELLED } }) },
     include: { theatre: true, patient: { select: { mrn: true, user: { select: { name: true } } } }, surgeon: { select: { user: { select: { name: true } } } }, anaesthetist: { select: { user: { select: { name: true } } } }, procedureTemplate: true, checklistItems: { orderBy: [{ phase: "asc" }, { key: "asc" }] }, operationNote: true },
     orderBy: { scheduledStart: "asc" }, take: 300,
   });

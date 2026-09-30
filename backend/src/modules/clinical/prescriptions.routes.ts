@@ -2,11 +2,12 @@ import PDFDocument from "pdfkit";
 import { DrugSchedule, InteractionSeverity, PrescriptionStatus, Role, UserStatus } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
-import { authenticate, reverifyRole, requireRole } from "../../middleware/auth";
+import { authenticate } from "../../middleware/auth";
+import { reverifyRole, requireRole } from "../../middleware/rbac";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../lib/errors";
 import { wrap } from "../../lib/async";
-import { audit } from "../../lib/audit";
+import { audit } from "../../middleware/audit";
 import { signPrescription, verifyPrescriptionSignature } from "../../lib/prescription-signature";
 
 const router = Router();
@@ -158,7 +159,10 @@ router.post("/clinical/drug-interactions", authenticate, requireRole(...catalogR
 }));
 
 router.patch("/clinical/doctor-profile", authenticate, requireRole(Role.DOCTOR), reverifyRole(Role.DOCTOR), wrap(async (req, res) => {
-  const body = z.object({ registrationNumber: z.string().trim().min(2).max(80) }).parse(req.body);
+  const body = z.object({
+    registrationNumber: z.string().trim().min(2).max(80).optional(),
+    consultationMinutes: z.number().int().min(5).max(120).optional(),
+  }).refine((value) => Object.values(value).some((item) => item !== undefined), "Update at least one professional detail.").parse(req.body);
   const doctor = await prisma.doctorProfile.findFirst({ where: { tenantId: req.tenantId!, userId: req.user!.sub }, select: { id: true } });
   if (!doctor) throw new AppError(403, "DOCTOR_PROFILE_REQUIRED", "A doctor profile is required.");
   await prisma.doctorProfile.update({ where: { id: doctor.id }, data: body });
@@ -167,9 +171,16 @@ router.patch("/clinical/doctor-profile", authenticate, requireRole(Role.DOCTOR),
 }));
 
 router.get("/clinical/doctor-profile", authenticate, requireRole(Role.DOCTOR), reverifyRole(Role.DOCTOR), wrap(async (req, res) => {
-  const doctor = await prisma.doctorProfile.findFirst({ where: { tenantId: req.tenantId!, userId: req.user!.sub }, select: { id: true, registrationNumber: true } });
+  const doctor = await prisma.doctorProfile.findFirst({
+    where: { tenantId: req.tenantId!, userId: req.user!.sub },
+    select: {
+      id: true, registrationNumber: true, consultationMinutes: true, isBookable: true,
+      specialties: { select: { specialty: { select: { name: true } } } },
+      _count: { select: { appointments: true, treatments: true, prescriptions: true, investigationOrders: true } },
+    },
+  });
   if (!doctor) throw new AppError(403, "DOCTOR_PROFILE_REQUIRED", "A doctor profile is required.");
-  res.json({ success: true, data: { doctor } });
+  res.json({ success: true, data: { doctor: { ...doctor, specialties: doctor.specialties.map(({ specialty }) => specialty.name) } } });
 }));
 
 router.get("/clinical/prescription-favorites", authenticate, requireRole(...prescriberRoles), reverifyRole(...prescriberRoles), wrap(async (req, res) => {

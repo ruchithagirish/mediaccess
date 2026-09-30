@@ -1,11 +1,12 @@
 import { ClinicalNotificationType, ClinicalRecordType, InvestigationDepartment, InvestigationPriority, InvestigationStatus, Role, UserStatus } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
-import { authenticate, reverifyRole, requireRole } from "../../middleware/auth";
+import { authenticate } from "../../middleware/auth";
+import { reverifyRole, requireRole } from "../../middleware/rbac";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../lib/errors";
 import { wrap } from "../../lib/async";
-import { audit } from "../../lib/audit";
+import { audit } from "../../middleware/audit";
 import { publishClinicalNotifications, type ClinicalNotice } from "./notifications";
 import { createReportDownloadUrl, createReportUploadUrl, MAX_REPORT_SIZE, verifyReportObject } from "./report-storage";
 

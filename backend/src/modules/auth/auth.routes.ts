@@ -7,7 +7,7 @@ import { Prisma, Role, UserStatus, type User, type Patient } from "@prisma/clien
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../lib/errors";
 import { wrap } from "../../lib/async";
-import { audit } from "../../lib/audit";
+import { audit, auditRequired } from "../../middleware/audit";
 import { config } from "../../config";
 import { STAFF_ROLES, isStaff } from "../../roles";
 import { authenticate } from "../../middleware/auth";
@@ -63,6 +63,12 @@ const loginSchema = z.object({
   identifier: z.string().trim().min(1, "Enter your email or mobile number."),
   password: z.string().min(1, "Enter your password."),
 });
+const profileUpdateSchema = z.object({
+  name: name.optional(),
+  email: email.optional(),
+  phone: z.union([phone, z.literal(""), z.null()]).optional().transform((value) => value === "" ? null : value),
+}).refine((value) => Object.values(value).some((item) => item !== undefined), "Update at least one profile field.");
+const passwordUpdateSchema = z.object({ currentPassword: z.string().min(1), newPassword: password });
 
 /* ---------- helpers ---------- */
 const authLimiter = rateLimit({
@@ -91,15 +97,16 @@ const publicUser = (u: UserWithPatient) => ({
 
 async function issueSession(res: Response, user: Pick<User, "id" | "tenantId" | "roles">, family?: string) {
   const refresh = newRefreshToken();
+  const sessionId = family ?? crypto.randomUUID();
   await prisma.refreshToken.create({
     data: {
       userId: user.id,
       tokenHash: hashToken(refresh),
-      family: family ?? crypto.randomUUID(),
+      family: sessionId,
       expiresAt: new Date(Date.now() + config.refreshTtlSec * 1000),
     },
   });
-  setAuthCookies(res, signAccessToken({ sub: user.id, tid: user.tenantId, roles: user.roles }), refresh);
+  setAuthCookies(res, signAccessToken({ sub: user.id, tid: user.tenantId, roles: user.roles, sid: sessionId }), refresh);
 }
 
 const isUniqueError = (e: unknown) => e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002";
@@ -240,6 +247,108 @@ router.get(
     const user = await prisma.user.findUnique({ where: { id: req.user!.sub }, include: { patient: true } });
     if (!user || user.status !== UserStatus.ACTIVE) throw new AppError(401, "UNAUTHENTICATED", "Please sign in.");
     ok(res, { user: publicUser(user) });
+  })
+);
+
+router.patch(
+  "/me",
+  authenticate,
+  wrap(async (req, res) => {
+    const body = profileUpdateSchema.parse(req.body);
+    const current = await prisma.user.findFirst({ where: { id: req.user!.sub, tenantId: req.tenantId!, status: UserStatus.ACTIVE } });
+    if (!current) throw new AppError(401, "UNAUTHENTICATED", "Please sign in.");
+    try {
+      const user = await prisma.$transaction(async (tx) => {
+        const updated = await tx.user.update({ where: { id: current.id }, data: body });
+        await auditRequired(req, "ACCOUNT_PROFILE_UPDATED", "User", current.id, undefined, tx);
+        return updated;
+      });
+      ok(res, { user: publicUser({ ...user, patient: null }) });
+    } catch (error) {
+      if (isUniqueError(error)) throw new AppError(409, "ACCOUNT_CONTACT_IN_USE", "That email or phone number is already in use.");
+      throw error;
+    }
+  })
+);
+
+router.post(
+  "/me/password",
+  authLimiter,
+  authenticate,
+  wrap(async (req, res) => {
+    const body = passwordUpdateSchema.parse(req.body);
+    const user = await prisma.user.findFirst({ where: { id: req.user!.sub, tenantId: req.tenantId!, status: UserStatus.ACTIVE } });
+    if (!user) throw new AppError(401, "UNAUTHENTICATED", "Please sign in.");
+    if (!await bcrypt.compare(body.currentPassword, user.passwordHash)) throw new AppError(403, "CURRENT_PASSWORD_INVALID", "Current password is incorrect.");
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({ where: { id: user.id }, data: { passwordHash: await bcrypt.hash(body.newPassword, 12) } });
+      await tx.refreshToken.updateMany({ where: { userId: user.id, revokedAt: null }, data: { revokedAt: new Date() } });
+      await auditRequired(req, "ACCOUNT_PASSWORD_CHANGED", "User", user.id, undefined, tx);
+    });
+    clearAuthCookies(res);
+    ok(res, { passwordChanged: true, reauthenticationRequired: true });
+  })
+);
+
+router.get(
+  "/me/sessions",
+  authenticate,
+  wrap(async (req, res) => {
+    const now = new Date();
+    const currentToken = req.cookies?.refresh_token as string | undefined;
+    const sessions = await prisma.refreshToken.findMany({
+      where: { userId: req.user!.sub, revokedAt: null, expiresAt: { gt: now } },
+      select: { id: true, tokenHash: true, createdAt: true, expiresAt: true },
+      orderBy: { createdAt: "desc" },
+    });
+    ok(res, { sessions: sessions.map(({ tokenHash, ...session }) => ({ ...session, current: currentToken ? tokenHash === hashToken(currentToken) : false })) });
+  })
+);
+
+router.delete(
+  "/me/sessions/:id",
+  authenticate,
+  wrap(async (req, res) => {
+    const session = await prisma.refreshToken.findFirst({ where: { id: req.params.id, userId: req.user!.sub, revokedAt: null } });
+    if (!session) throw new AppError(404, "SESSION_NOT_FOUND", "Active session not found.");
+    await prisma.$transaction(async (tx) => {
+      await tx.refreshToken.update({ where: { id: session.id }, data: { revokedAt: new Date() } });
+      await auditRequired(req, "ACCOUNT_SESSION_REVOKED", "RefreshToken", session.id, undefined, tx);
+    });
+    const currentToken = req.cookies?.refresh_token as string | undefined;
+    const isCurrent = Boolean(currentToken && hashToken(currentToken) === session.tokenHash);
+    if (isCurrent) clearAuthCookies(res);
+    ok(res, { revoked: true, currentSession: isCurrent });
+  })
+);
+
+router.post(
+  "/me/sessions/revoke-others",
+  authenticate,
+  wrap(async (req, res) => {
+    const currentToken = req.cookies?.refresh_token as string | undefined;
+    if (!currentToken) throw new AppError(401, "UNAUTHENTICATED", "Please sign in.");
+    const current = await prisma.refreshToken.findFirst({ where: { userId: req.user!.sub, tokenHash: hashToken(currentToken), revokedAt: null } });
+    if (!current) throw new AppError(401, "SESSION_REVOKED", "Please sign in again.");
+    const count = await prisma.$transaction(async (tx) => {
+      const result = await tx.refreshToken.updateMany({ where: { userId: req.user!.sub, id: { not: current.id }, revokedAt: null }, data: { revokedAt: new Date() } });
+      await auditRequired(req, "ACCOUNT_OTHER_SESSIONS_REVOKED", "User", req.user!.sub, undefined, tx);
+      return result.count;
+    });
+    ok(res, { revoked: count });
+  })
+);
+
+router.get(
+  "/me/activity",
+  authenticate,
+  wrap(async (req, res) => {
+    const activity = await prisma.auditLog.findMany({
+      where: { tenantId: req.tenantId!, userId: req.user!.sub },
+      select: { id: true, action: true, entityType: true, entityId: true, ip: true, createdAt: true },
+      orderBy: { createdAt: "desc" }, take: 100,
+    });
+    ok(res, { activity });
   })
 );
 

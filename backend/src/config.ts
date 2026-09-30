@@ -10,6 +10,7 @@ export const config = {
   port: Number(process.env.PORT ?? 4000),
   webOrigin: process.env.WEB_ORIGIN ?? "http://localhost:3000",
   jwtAccessSecret: required("JWT_ACCESS_SECRET"),
+  redisUrl: process.env.REDIS_URL ?? "redis://localhost:6379",
   defaultTenantSlug: process.env.DEFAULT_TENANT_SLUG ?? "demo",
   isProd: process.env.NODE_ENV === "production",
   accessTtlSec: 15 * 60,

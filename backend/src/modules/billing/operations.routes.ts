@@ -3,11 +3,12 @@ import Razorpay from "razorpay";
 import { AppointmentStatus, DiscountStatus, InvoiceStatus, PaymentAttemptStatus, PaymentMode, Role, TaxTreatment, UserStatus } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
-import { authenticate, reverifyRole, requireRole } from "../../middleware/auth";
+import { authenticate } from "../../middleware/auth";
+import { reverifyRole, requireRole } from "../../middleware/rbac";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../lib/errors";
 import { wrap } from "../../lib/async";
-import { audit } from "../../lib/audit";
+import { audit } from "../../middleware/audit";
 import { deliverPaymentReceipts } from "./receipts";
 
 const router = Router();
@@ -370,7 +371,15 @@ router.get("/billing/invoices", wrap(async (req, res) => {
     where: { tenantId: req.tenantId!, status: { not: InvoiceStatus.VOID } },
     include: {
       ...invoiceRead,
-      appointment: { select: { scheduledFor: true } },
+      appointment: { select: {
+        scheduledFor: true,
+        doctor: { select: { user: { select: { name: true } }, specialties: { select: { specialty: { select: { name: true } } } } } },
+      } },
+      admission: { select: {
+        admissionNumber: true,
+        attendingDoctor: { select: { user: { select: { name: true } } } },
+        bed: { select: { ward: { select: { name: true } } } },
+      } },
       payments: { select: {
         id: true, mode: true, amountPaise: true, receivedAt: true, reference: true,
         counter: { select: { name: true } },

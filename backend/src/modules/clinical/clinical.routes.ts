@@ -1,11 +1,13 @@
 import { ClinicalRecordType, Role, UserStatus } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
-import { authenticate, reverifyRole, requireRole } from "../../middleware/auth";
+import { authenticate } from "../../middleware/auth";
+import { reverifyRole, requireRole } from "../../middleware/rbac";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../lib/errors";
 import { wrap } from "../../lib/async";
-import { audit } from "../../lib/audit";
+import { audit, auditRequired } from "../../middleware/audit";
+import { createReportDownloadUrl } from "./report-storage";
 
 const router = Router();
 const clinicalRoles = [Role.ADMIN, Role.RECEPTION, Role.DOCTOR, Role.NURSE, Role.PHARMACIST, Role.LAB_TECH];
@@ -98,6 +100,7 @@ router.get("/clinical/patients/search", wrap(async (req, res) => {
     ) DESC
     LIMIT 25
   `;
+  await Promise.all(patients.map((patient) => auditRequired(req, "PATIENT_RECORD_SEARCH_RESULT_READ", "Patient", patient.id)));
   res.json({ success: true, data: { patients: patients.map((patient) => ({
     ...patient,
     dob: patient.dob.toISOString().slice(0, 10),
@@ -113,6 +116,35 @@ router.get("/clinical/patients/:id", wrap(async (req, res) => {
       insurances: true,
       emergencyContacts: true,
       encounters: { include: { doctor: { include: { user: { select: { name: true } } } } }, orderBy: { createdAt: "desc" }, take: 30 },
+      prescriptions: {
+        where: { tenantId: req.tenantId! },
+        include: {
+          doctor: { include: { user: { select: { name: true } } } },
+          items: { include: { dispenseLines: { include: {
+            dispense: { select: { id: true, status: true, createdAt: true, pharmacist: { select: { name: true } } } },
+            batch: { select: { batchNumber: true, expiryDate: true } },
+          } } } },
+        },
+        orderBy: { createdAt: "desc" }, take: 100,
+      },
+      investigationOrders: {
+        where: { tenantId: req.tenantId! },
+        include: {
+          test: { select: { code: true, name: true, department: true } },
+          orderedBy: { include: { user: { select: { name: true } } } },
+          reports: { select: { id: true, fileName: true, contentType: true, sizeBytes: true, summary: true, isCritical: true, uploadedAt: true } },
+        },
+        orderBy: { orderedAt: "desc" }, take: 100,
+      },
+      admissions: {
+        where: { tenantId: req.tenantId! },
+        include: {
+          attendingDoctor: { include: { user: { select: { name: true } } } },
+          bed: { include: { ward: { select: { name: true } } } },
+          invoice: { select: { id: true, invoiceNumber: true, totalPaise: true, status: true, issuedAt: true } },
+        },
+        orderBy: { admittedAt: "desc" }, take: 100,
+      },
       appointments: {
         include: {
           doctor: { include: { user: { select: { name: true } } } },
@@ -123,12 +155,35 @@ router.get("/clinical/patients/:id", wrap(async (req, res) => {
       },
       vitals: { orderBy: { recordedAt: "desc" }, take: 30 },
       clinicalRecords: { orderBy: { occurredAt: "desc" }, take: 50 },
-      invoices: { select: { id: true, invoiceNumber: true, totalPaise: true, issuedAt: true }, orderBy: { issuedAt: "desc" }, take: 50 },
+      invoices: {
+        include: {
+          lines: { orderBy: { id: "asc" } },
+          payments: {
+            select: {
+              id: true, mode: true, amountPaise: true, reference: true, receivedAt: true,
+              receiptDeliveries: { select: { channel: true, status: true, destination: true, sentAt: true } },
+            },
+            orderBy: { receivedAt: "desc" },
+          },
+        },
+        orderBy: { issuedAt: "desc" }, take: 50,
+      },
     },
   });
   if (!patient) throw new AppError(404, "PATIENT_NOT_FOUND", "Patient not found.");
+  await auditRequired(req, "PATIENT_RECORD_READ", "Patient", patient.id);
   const { user, ...record } = patient;
   res.json({ success: true, data: { patient: { ...record, name: user.name, email: user.email, phone: user.phone } } });
+}));
+
+router.get("/clinical/investigation-reports/:id/download-url", wrap(async (req, res) => {
+  const report = await prisma.investigationReport.findFirst({
+    where: { id: req.params.id, tenantId: req.tenantId! },
+    select: { id: true, objectKey: true, fileName: true },
+  });
+  if (!report) throw new AppError(404, "REPORT_NOT_FOUND", "Report not found.");
+  await auditRequired(req, "PATIENT_INVESTIGATION_REPORT_READ", "InvestigationReport", report.id);
+  res.json({ success: true, data: { url: await createReportDownloadUrl(report.objectKey), fileName: report.fileName } });
 }));
 
 router.patch("/clinical/patients/:id/profile", requireRole(Role.RECEPTION, Role.ADMIN), reverifyRole(Role.RECEPTION, Role.ADMIN), wrap(async (req, res) => {
@@ -159,8 +214,8 @@ router.patch("/clinical/patients/:id/profile", requireRole(Role.RECEPTION, Role.
       },
     });
     if (body.emergencyContact) await tx.emergencyContact.create({ data: { ...body.emergencyContact, patientId: patient.id } });
+    await auditRequired(req, "PATIENT_PROFILE_UPDATED", "Patient", patient.id, undefined, tx);
   });
-  await audit(req, "PATIENT_PROFILE_UPDATED", "Patient", patient.id);
   res.json({ success: true, data: { updated: true } });
 }));
 
@@ -178,10 +233,13 @@ router.post("/clinical/patients/:id/vitals", requireRole(Role.NURSE, Role.ADMIN)
     || (body.temperature !== undefined && (body.temperature < 36 || body.temperature > 38))
     || (body.respiratoryRate !== undefined && (body.respiratoryRate < 12 || body.respiratoryRate > 20))
     || (body.oxygenSaturation !== undefined && body.oxygenSaturation < 95);
-  const vital = await prisma.vitalEntry.create({
-    data: { ...body, patientId: patient.id, enteredById: user.id, abnormal },
+  const vital = await prisma.$transaction(async (tx) => {
+    const created = await tx.vitalEntry.create({
+      data: { ...body, patientId: patient.id, enteredById: user.id, abnormal },
+    });
+    await auditRequired(req, "PATIENT_VITALS_RECORDED", "VitalEntry", created.id, undefined, tx);
+    return created;
   });
-  await audit(req, "PATIENT_VITALS_RECORDED", "VitalEntry", vital.id);
   res.status(201).json({ success: true, data: { vital } });
 }));
 
@@ -193,11 +251,14 @@ router.post("/clinical/patients/:id/encounters", requireRole(Role.DOCTOR, Role.A
   ]);
   if (!patient) throw new AppError(404, "PATIENT_NOT_FOUND", "Patient not found.");
   if (!doctor) throw new AppError(403, "DOCTOR_PROFILE_REQUIRED", "A doctor profile is required to record a consultation.");
-  const encounter = await prisma.encounter.create({
-    data: { ...body, icd10Code: body.icd10Code || null, tenantId: req.tenantId!, patientId: patient.id, doctorId: doctor.id },
-    include: { doctor: { include: { user: { select: { name: true } } } } },
+  const encounter = await prisma.$transaction(async (tx) => {
+    const created = await tx.encounter.create({
+      data: { ...body, icd10Code: body.icd10Code || null, tenantId: req.tenantId!, patientId: patient.id, doctorId: doctor.id },
+      include: { doctor: { include: { user: { select: { name: true } } } } },
+    });
+    await auditRequired(req, "PATIENT_ENCOUNTER_RECORDED", "Encounter", created.id, undefined, tx);
+    return created;
   });
-  await audit(req, "PATIENT_ENCOUNTER_RECORDED", "Encounter", encounter.id);
   res.status(201).json({ success: true, data: { encounter } });
 }));
 
